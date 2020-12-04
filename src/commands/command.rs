@@ -2,6 +2,8 @@
 use serde_json::Value;
 use log::{info, trace};
 
+use super::verify_command;
+
 /// Commands available from the client
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Commands
@@ -97,11 +99,9 @@ impl Command
                             }
                         };
 
-                        Ok(Command
-                        {
-                            data: rest_value,
-                            cmd: cmd_type
-                        })
+                        let command = Command {data: rest_value, cmd: cmd_type};
+                        verify_command(&command)?;
+                        Ok(command)
                     }
                     else
                     {

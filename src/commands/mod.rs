@@ -1,8 +1,8 @@
 pub mod command;
 pub use command::*;
 
-pub mod handlers;
-pub use handlers::*;
+pub mod verify;
+pub use verify::*;
 
 #[cfg(test)]
 pub mod tests;
