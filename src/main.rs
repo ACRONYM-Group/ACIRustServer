@@ -3,6 +3,7 @@
 mod args;
 mod logging;
 mod commands;
+mod database;
 
 use structopt::StructOpt;
 

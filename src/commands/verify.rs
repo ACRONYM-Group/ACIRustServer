@@ -2,6 +2,7 @@ use super::{Command, Commands, CommandParsingError};
 
 use serde_json::Value;
 
+/// Verify the integrity of the command
 pub fn verify_command(command: &Command) -> Result<(), CommandParsingError>
 {
     let keys = match command.cmd

@@ -53,7 +53,7 @@ impl Command
             Ok(value) => Command::from_json(value),
             Err(error) => 
             {
-                let msg = format!("{:?}", error);
+                let msg = format!("Bad JSON Packet {:?}", error);
                 info!("{}", msg);
                 Err(CommandParsingError::BadJSON(msg))
             }
