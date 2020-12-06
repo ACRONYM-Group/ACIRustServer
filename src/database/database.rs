@@ -110,7 +110,13 @@ impl Database
     /// index in the returned array
     pub fn get_last_n(&self, key: &str, n: usize) -> Result<Value, String>
     {
-        unimplemented!()
+        let mut array = self.read_key_array(key)?;
+        let l = array.len() - n.min(array.len());
+
+        let s = &mut array[l..];
+        s.reverse();
+
+        Ok(Value::Array(Vec::from(s)))
     }
 
     /// Gets the name of the database
