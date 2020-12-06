@@ -232,8 +232,16 @@ pub fn test_permission_check_read_authed()
 
     assert_eq!(perm.check_read(false, &"".to_string(), &"".to_string()), Ok(false));
     assert_eq!(perm.check_read(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(false));
     assert_eq!(perm.check_read(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"".to_string(), &"g_auth".to_string()), Ok(false));
+
+    let perm = Permission{write_a_users: vec![], write_g_users: vec![], read_a_users: vec![], read_g_users: vec!["authed".to_string()]};
+
+    assert_eq!(perm.check_read(false, &"".to_string(), &"".to_string()), Ok(false));
+    assert_eq!(perm.check_read(true, &"user".to_string(), &"a_auth".to_string()), Ok(false));
+    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"".to_string(), &"a_auth".to_string()), Ok(false));
     assert_eq!(perm.check_read(true, &"".to_string(), &"g_auth".to_string()), Ok(true));
 }
 
@@ -244,43 +252,11 @@ pub fn test_permission_check_write_authed()
 
     assert_eq!(perm.check_write(false, &"".to_string(), &"".to_string()), Ok(false));
     assert_eq!(perm.check_write(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_write(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_write(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_write(true, &"".to_string(), &"g_auth".to_string()), Ok(true));
-}
-
-#[test]
-pub fn test_permission_check_read_any()
-{
-    let perm = Permission{write_a_users: vec![], write_g_users: vec![], read_a_users: vec!["any".to_string()], read_g_users: vec![]};
-
-    assert_eq!(perm.check_read(false, &"".to_string(), &"".to_string()), Ok(false));
-    assert_eq!(perm.check_read(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(false));
-    assert_eq!(perm.check_read(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_read(true, &"".to_string(), &"g_auth".to_string()), Ok(false));
-
-    let perm = Permission{write_a_users: vec![], write_g_users: vec![], read_a_users: vec![], read_g_users: vec!["any".to_string()]};
-
-    assert_eq!(perm.check_read(false, &"".to_string(), &"".to_string()), Ok(false));
-    assert_eq!(perm.check_read(true, &"user".to_string(), &"a_auth".to_string()), Ok(false));
-    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
-    assert_eq!(perm.check_read(true, &"".to_string(), &"a_auth".to_string()), Ok(false));
-    assert_eq!(perm.check_read(true, &"".to_string(), &"g_auth".to_string()), Ok(true));
-}
-
-#[test]
-pub fn test_permission_check_write_any()
-{
-    let perm = Permission{write_a_users: vec!["any".to_string()], write_g_users: vec![], read_a_users: vec![], read_g_users: vec![]};
-
-    assert_eq!(perm.check_write(false, &"".to_string(), &"".to_string()), Ok(false));
-    assert_eq!(perm.check_write(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
     assert_eq!(perm.check_write(true, &"user".to_string(), &"g_auth".to_string()), Ok(false));
     assert_eq!(perm.check_write(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
     assert_eq!(perm.check_write(true, &"".to_string(), &"g_auth".to_string()), Ok(false));
 
-    let perm = Permission{write_a_users: vec![], write_g_users: vec!["any".to_string()], read_a_users: vec![], read_g_users: vec![]};
+    let perm = Permission{write_a_users: vec![], write_g_users: vec!["authed".to_string()], read_a_users: vec![], read_g_users: vec![]};
 
     assert_eq!(perm.check_write(false, &"".to_string(), &"".to_string()), Ok(false));
     assert_eq!(perm.check_write(true, &"user".to_string(), &"a_auth".to_string()), Ok(false));
@@ -335,4 +311,28 @@ pub fn test_permission_check_write_set()
     assert_eq!(perm.check_write(true, &"".to_string(), &"g_auth".to_string()), Ok(false));
     assert_eq!(perm.check_write(true, &"name".to_string(), &"a_auth".to_string()), Ok(false));
     assert_eq!(perm.check_write(true, &"name".to_string(), &"g_auth".to_string()), Ok(false));
+}
+
+#[test]
+pub fn test_permission_check_read_any()
+{
+    let perm = Permission{write_a_users: vec![], write_g_users: vec![], read_a_users: vec!["any".to_string()], read_g_users: vec![]};
+
+    assert_eq!(perm.check_read(false, &"".to_string(), &"".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_read(true, &"".to_string(), &"g_auth".to_string()), Ok(true));
+}
+
+#[test]
+pub fn test_permission_check_write_any()
+{
+    let perm = Permission{write_a_users: vec!["any".to_string()], write_g_users: vec![], read_a_users: vec![], read_g_users: vec![]};
+
+    assert_eq!(perm.check_write(false, &"".to_string(), &"".to_string()), Ok(true));
+    assert_eq!(perm.check_write(true, &"user".to_string(), &"a_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_write(true, &"user".to_string(), &"g_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_write(true, &"".to_string(), &"a_auth".to_string()), Ok(true));
+    assert_eq!(perm.check_write(true, &"".to_string(), &"g_auth".to_string()), Ok(true));
 }

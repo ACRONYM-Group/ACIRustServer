@@ -169,23 +169,23 @@ impl Permission
     {
         trace!("Checking if {} user `{}`:`{}` can read", if is_authed {"Authed"} else {"Not authed"}, domain, user);
 
+        if self.read_a_users.contains(&"any".to_string())
+        {
+            return Ok(true)
+        }
+
         if !is_authed
         {
             return Ok(false)
         }
 
-        if self.read_a_users.contains(&"authed".to_string())
-        {
-            return Ok(true)
-        }
-
         if domain == "a_auth"
         {
-            return Ok(self.read_a_users.contains(&"any".to_string()) || self.read_a_users.contains(user)) 
+            return Ok(self.read_a_users.contains(&"authed".to_string()) || self.read_a_users.contains(user)) 
         }
         else if domain == "g_auth"
         {
-            return Ok(self.read_g_users.contains(&"any".to_string()) || self.read_g_users.contains(user)) 
+            return Ok(self.read_g_users.contains(&"authed".to_string()) || self.read_g_users.contains(user)) 
         }
         else
         {
@@ -200,23 +200,23 @@ impl Permission
     {
         trace!("Checking if {} user `{}`:`{}` can write", if is_authed {"Authed"} else {"Not authed"}, domain, user);
 
+        if self.write_a_users.contains(&"any".to_string())
+        {
+            return Ok(true)
+        }
+
         if !is_authed
         {
             return Ok(false)
         }
 
-        if self.write_a_users.contains(&"authed".to_string())
-        {
-            return Ok(true)
-        }
-
         if domain == "a_auth"
         {
-            return Ok(self.write_a_users.contains(&"any".to_string()) || self.write_a_users.contains(user)) 
+            return Ok(self.write_a_users.contains(&"authed".to_string()) || self.write_a_users.contains(user)) 
         }
         else if domain == "g_auth"
         {
-            return Ok(self.write_g_users.contains(&"any".to_string()) || self.write_g_users.contains(user)) 
+            return Ok(self.write_g_users.contains(&"authed".to_string()) || self.write_g_users.contains(user)) 
         }
         else
         {
