@@ -28,16 +28,9 @@ pub fn test_database_read_write()
 {
     let db = Database::new("Database");
 
-    let temp_json: serde_json::Value = serde_json::from_str("{\"key\": 0, \"other\": {\"a\": 0, \"b\": 1, \"c\": 2}, \"another\": [0, 1, 2, \"3\", \"4\"]}").unwrap();
-    
-    let (d0, d1, d2) = match temp_json
-    {
-        serde_json::Value::Object(obj) =>
-        {
-            (obj.get("key").unwrap().clone(), obj.get("other").unwrap().clone(), obj.get("another").unwrap().clone())
-        },
-        _ => panic!("Bad Input JSON")
-    };
+    let d0 = json!(0);
+    let d1 = json!({"a": 0, "b": 1, "c": 2});
+    let d2 = json!([0, 1, 2, "3", "4"]);
 
     assert!(db.read("key").is_err());
     assert!(db.read("other").is_err());
@@ -71,16 +64,8 @@ pub fn test_database_read_write_index()
 {
     let db = Database::new("Database");
 
-    let temp_json: serde_json::Value = serde_json::from_str("{\"key\": 0, \"other\": {\"a\": 0, \"b\": 1, \"c\": 2}, \"another\": [0, 1, 2, \"3\", \"4\"]}").unwrap();
-    
-    let (_, nonlst, lst) = match temp_json
-    {
-        serde_json::Value::Object(obj) =>
-        {
-            (obj.get("key").unwrap().clone(), obj.get("other").unwrap().clone(), obj.get("another").unwrap().clone())
-        },
-        _ => panic!("Bad Input JSON")
-    };
+    let nonlst = json!({"a": 0, "b": 1, "c": 2});
+    let lst = json!([0, 1, 2, "3", "4"]);
 
     db.write("key", lst.clone()).unwrap();
     db.write("nonlst", nonlst.clone()).unwrap();
