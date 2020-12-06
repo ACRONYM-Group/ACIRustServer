@@ -1,4 +1,5 @@
 use serde_json::json;
+use serde_json::Value;
 
 use super::Database;
 
@@ -86,47 +87,47 @@ pub fn test_database_read_write_index()
 
     assert!(db.read_index("nonlst", 0).is_err());
 
+    assert_eq!(db.read_index("key", 0), Ok(json!(0)));
+    assert_eq!(db.read_index("key", 1), Ok(json!(1)));
+    assert_eq!(db.read_index("key", 2), Ok(json!(2)));
+    assert_eq!(db.read_index("key", 3), Ok(json!("3")));
+    assert_eq!(db.read_index("key", 4), Ok(json!("4")));
+    assert!(db.read_index("key", 5).is_err());
+
+    db.write_index("key", 0, json!("0")).unwrap();
+    db.write_index("key", 1, json!("1")).unwrap();
+    db.write_index("key", 2, json!("2")).unwrap();
+    db.write_index("key", 3, json!(3)).unwrap();
+    db.write_index("key", 4, json!(4)).unwrap();
+
     assert_eq!(db.read_index("key", 0), Ok(json!("0")));
     assert_eq!(db.read_index("key", 1), Ok(json!("1")));
     assert_eq!(db.read_index("key", 2), Ok(json!("2")));
-    assert_eq!(db.read_index("key", 3), Ok(json!("\"3\"")));
-    assert_eq!(db.read_index("key", 4), Ok(json!("\"4\"")));
+    assert_eq!(db.read_index("key", 3), Ok(json!(3)));
+    assert_eq!(db.read_index("key", 4), Ok(json!(4)));
     assert!(db.read_index("key", 5).is_err());
 
-    db.write_index("key", 0, json!("\"0\"")).unwrap();
-    db.write_index("key", 1, json!("\"1\"")).unwrap();
-    db.write_index("key", 2, json!("\"2\"")).unwrap();
-    db.write_index("key", 3, json!("3")).unwrap();
-    db.write_index("key", 4, json!("4")).unwrap();
+    db.write_index("key", 5, json!(5)).unwrap();
 
-    assert_eq!(db.read_index("key", 0), Ok(json!("\"0\"")));
-    assert_eq!(db.read_index("key", 1), Ok(json!("\"1\"")));
-    assert_eq!(db.read_index("key", 2), Ok(json!("\"2\"")));
-    assert_eq!(db.read_index("key", 3), Ok(json!("3")));
-    assert_eq!(db.read_index("key", 4), Ok(json!("4")));
-    assert!(db.read_index("key", 5).is_ok());
-
-    db.write_index("key", 5, json!("5")).unwrap();
-
-    assert_eq!(db.read_index("key", 0), Ok(json!("\"0\"")));
-    assert_eq!(db.read_index("key", 1), Ok(json!("\"1\"")));
-    assert_eq!(db.read_index("key", 2), Ok(json!("\"2\"")));
-    assert_eq!(db.read_index("key", 3), Ok(json!("3")));
-    assert_eq!(db.read_index("key", 4), Ok(json!("4")));
-    assert_eq!(db.read_index("key", 5), Ok(json!("5")));
+    assert_eq!(db.read_index("key", 0), Ok(json!("0")));
+    assert_eq!(db.read_index("key", 1), Ok(json!("1")));
+    assert_eq!(db.read_index("key", 2), Ok(json!("2")));
+    assert_eq!(db.read_index("key", 3), Ok(json!(3)));
+    assert_eq!(db.read_index("key", 4), Ok(json!(4)));
+    assert_eq!(db.read_index("key", 5), Ok(json!(5)));
     assert!(db.read_index("key", 6).is_err());
 
-    db.write_index("key", 8, json!("8")).unwrap();
+    db.write_index("key", 8, json!(8)).unwrap();
 
-    assert_eq!(db.read_index("key", 0), Ok(json!("\"0\"")));
-    assert_eq!(db.read_index("key", 1), Ok(json!("\"1\"")));
-    assert_eq!(db.read_index("key", 2), Ok(json!("\"2\"")));
-    assert_eq!(db.read_index("key", 3), Ok(json!("3")));
-    assert_eq!(db.read_index("key", 4), Ok(json!("4")));
-    assert_eq!(db.read_index("key", 5), Ok(json!("5")));
-    assert_eq!(db.read_index("key", 6), Ok(json!("null")));
-    assert_eq!(db.read_index("key", 7), Ok(json!("null")));
-    assert_eq!(db.read_index("key", 8), Ok(json!("8")));
+    assert_eq!(db.read_index("key", 0), Ok(json!("0")));
+    assert_eq!(db.read_index("key", 1), Ok(json!("1")));
+    assert_eq!(db.read_index("key", 2), Ok(json!("2")));
+    assert_eq!(db.read_index("key", 3), Ok(json!(3)));
+    assert_eq!(db.read_index("key", 4), Ok(json!(4)));
+    assert_eq!(db.read_index("key", 5), Ok(json!(5)));
+    assert_eq!(db.read_index("key", 6), Ok(Value::Null));
+    assert_eq!(db.read_index("key", 7), Ok(Value::Null));
+    assert_eq!(db.read_index("key", 8), Ok(json!(8)));
     assert!(db.read_index("key", 9).is_err());
 }
 

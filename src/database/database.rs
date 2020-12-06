@@ -26,37 +26,83 @@ impl Database
     /// Write to the Database
     pub fn write(&self, key: &str, data: Value) -> Result<(), String>
     {
-        unimplemented!()
+        self.data.insert(key.to_string(), data);
+        Ok(())
     }
 
     /// Read from the Database
     pub fn read(&self, key: &str) -> Result<Value, String>
     {
-        unimplemented!()
+        if self.data.contains_key(key)
+        {
+            Ok(self.data.get(key).unwrap().clone())
+        }
+        else
+        {
+            Err(format!("Key `{}` not found in database", key))
+        }
+    }
+
+    /// Get an entry from the database which must be an array
+    fn read_key_array(&self, key: &str) -> Result<Vec<Value>, String>
+    {
+        if self.data.contains_key(key)
+        {
+            match self.data.get(key).unwrap().clone()
+            {
+                Value::Array(array) => Ok(array),
+                default => Err(format!("The value for key `{}` is not an array ({:?})", key, default))
+            }
+        }
+        else
+        {
+            Err(format!("Key `{}` not found in database", key))
+        }
     }
 
     /// Get the index within an array stored in the hashmap
     pub fn read_index(&self, key: &str, index: usize) -> Result<Value, String>
     {
-        unimplemented!()
+        let array = self.read_key_array(key)?;
+
+        match array.get(index)
+        {
+            Some(val) => Ok(val.clone()),
+            None => Err(format!("The array for `{}` does not contain index {}", key, index))
+        }
     }
 
     /// Set the value stored at an index in an array stored in the hashmap
     pub fn write_index(&self, key: &str, index: usize, data: Value) -> Result<(), String>
     {
-        unimplemented!()
+        let mut array = self.read_key_array(key)?;
+
+        while index >= array.len()
+        {
+            array.push(Value::Null);
+        }
+
+        array[index] = data;
+
+        self.write(key, Value::Array(array))?;
+        Ok(())
     }
 
     /// Append to an array stored in the hashmap
     pub fn append(&self, key: &str, data: Value) -> Result<(), String>
     {
-        unimplemented!()
+        let mut array = self.read_key_array(key)?;
+
+        array.push(data);
+
+        self.write(key, Value::Array(array))?;
+        Ok(())
     }
 
     /// Gets the length of an array stored in the hashmap
     pub fn get_length(&self, key: &str) -> Result<usize, String>
     {
-        unimplemented!()
+        Ok(self.read_key_array(key)?.len())
     }
 
     /// Gets the last `n` items from an array stored in the hashmap, or if the length of the array is less than `n` items,
@@ -70,12 +116,12 @@ impl Database
     /// Gets the name of the database
     pub fn get_name(&self) -> String
     {
-        unimplemented!()
+        self.name.clone()
     }
 
     /// Gets the number of keys stored in the database
     pub fn get_number_of_keys(&self) -> usize
     {
-        unimplemented!()
+        self.data.len()
     }
 }
