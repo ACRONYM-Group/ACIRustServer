@@ -1,9 +1,8 @@
 use log::{error, trace};
 use serde_json::{Value, json};
 
-use std::sync::Arc;
-
 /// Permission gating a value
+#[derive(Debug, Clone)]
 pub struct Permission
 {
     pub read_a_users: Vec<String>,
@@ -225,5 +224,39 @@ impl Permission
             return Err(msg);
         }
     }
+
+    /// Wrapper around check_read for UserAuthentication
+    pub fn check_user_read(&self, user: &UserAuthentication) -> Result<bool, String>
+    {
+        self.check_read(user.is_authed, &user.name, &user.domain)
+    }
+
+    /// Wrapper around check_write for UserAuthentication
+    pub fn check_user_write(&self, user: &UserAuthentication) -> Result<bool, String>
+    {
+        self.check_write(user.is_authed, &user.name, &user.domain)
+    }
 }
 
+impl std::default::Default for Permission
+{
+    fn default() -> Permission
+    {
+        Permission
+        {
+            read_a_users: vec!["any".to_string()],
+            read_g_users: vec!["any".to_string()],
+            write_a_users: vec!["any".to_string()],
+            write_g_users: vec!["any".to_string()]
+        }
+    }
+}
+
+/// User authentication state
+#[derive(Debug, Clone)]
+pub struct UserAuthentication
+{
+    is_authed: bool,
+    name: String,
+    domain: String
+}
