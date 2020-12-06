@@ -256,7 +256,7 @@ impl std::default::Default for Permission
 #[derive(Debug, Clone)]
 pub struct UserAuthentication
 {
-    is_authed: bool,
-    name: String,
-    domain: String
+    pub is_authed: bool,
+    pub name: String,
+    pub domain: String
 }
