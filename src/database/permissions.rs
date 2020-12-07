@@ -15,9 +15,9 @@ pub struct Permission
 impl Permission
 {
     /// Generate permissions from a json object
-    pub fn new(object: Value) -> Result<Self, String>
+    pub fn new(object: &Value, name: &str) -> Result<Self, String>
     {
-        trace!("Creating premissions from {}", object);
+        trace!("Creating premissions for {}", name);
 
         let map = if let Value::Object(obj) = &object
         {
@@ -65,11 +65,11 @@ impl Permission
 
                     if let Value::String(name) = &perm[1]
                     {
-                        if perm[0] == json!("a_auth")
+                        if perm[0] == json!("a_user")
                         {
                             read_a_users.push(name.clone());
                         }
-                        else if perm[0] == json!("g_auth")
+                        else if perm[0] == json!("g_user")
                         {
                             read_g_users.push(name.clone());
                         }
@@ -117,11 +117,11 @@ impl Permission
 
                     if let Value::String(name) = &perm[1]
                     {
-                        if perm[0] == json!("a_auth")
+                        if perm[0] == json!("a_user")
                         {
                             write_a_users.push(name.clone());
                         }
-                        else if perm[0] == json!("g_auth")
+                        else if perm[0] == json!("g_user")
                         {
                             write_g_users.push(name.clone());
                         }

@@ -50,7 +50,7 @@ impl Database
     /// Read from the Database
     pub fn read(&self, key: &str) -> Result<Value, String>
     {
-        trace!("Reading data from `{}` in database {}", key, self.name);
+        trace!("Reading data from `{}` in database `{}`", key, self.name);
 
         if self.data.contains_key(key)
         {

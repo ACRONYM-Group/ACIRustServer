@@ -24,14 +24,12 @@ pub fn benchmarking(c: &mut Criterion)
     let db2 = db.clone();
     let user2 = user.clone();
 
-    let tag = thread::spawn(move || loop {db2.write_to_key("key", criterion::black_box(serde_json::json!(0)) , &user2).unwrap();});
+    thread::spawn(move || loop {db2.write_to_key("key", criterion::black_box(serde_json::json!(0)) , &user2).unwrap();});
 
     group.bench_function("Writing", |b| b.iter(|| db.write_to_key("key", criterion::black_box(serde_json::json!(0)), &user).unwrap()));
     group.bench_function("Reading", |b| b.iter(|| db.read_from_key("key", &user).unwrap()));
     
     group.finish();
-
-    tag.join();
 }
 
 criterion_group!(benches, benchmarking);

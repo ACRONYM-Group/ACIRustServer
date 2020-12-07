@@ -1,11 +1,8 @@
-
-
 use serde_json::json;
 use serde_json::Value;
 
 use super::Database;
 use super::Permission;
-
 
 #[test]
 pub fn test_database_creation()
