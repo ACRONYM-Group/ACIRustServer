@@ -9,9 +9,8 @@ fn main()
     let opt = args::Arguments::from_args();
     logging::initialize_logging(&opt);
 
-    let db = database::database_from_disk(&opt.path, "command", &opt).unwrap();
+    let db = database::DatabaseInterface::new(database::Database::new("test"), chashmap::CHashMap::new());
     let user = database::UserAuthentication{is_authed: true, name: "user".to_string(), domain:"a_auth".to_string()};
 
-    println!("{:?}", db.read_from_key("test_begin", &user));
-    println!("{:?}", db.read_from_key("test_end", &user));
+    db.write_to_key("test_key", serde_json::json!("Hello World!"), &user).unwrap();
 }

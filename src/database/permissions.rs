@@ -260,3 +260,17 @@ pub struct UserAuthentication
     pub name: String,
     pub domain: String
 }
+
+impl UserAuthentication
+{
+    /// Create a completely fresh connection user
+    pub fn new() -> Self
+    {
+        Self
+        {
+            is_authed: false,
+            name: String::new(),
+            domain: String::new()
+        }
+    }
+}

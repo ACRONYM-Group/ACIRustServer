@@ -6,13 +6,13 @@ use simple_logger::SimpleLogger;
 /// Initialize the logger using the settings passed in the command line arguments
 pub fn initialize_logging(args: &Arguments)
 {
-    let mut filter = match args.verbose.log_level().unwrap()
+    let mut filter = match args.verbose.log_level()
     {
-        Level::Error => LevelFilter::Error,
-        Level::Warn => LevelFilter::Warn,
-        Level::Info => LevelFilter::Info,
-        Level::Debug => LevelFilter::Debug,
-        Level::Trace => LevelFilter::Trace
+        Some(Level::Error) | None => LevelFilter::Error,
+        Some(Level::Warn) => LevelFilter::Warn,
+        Some(Level::Info) => LevelFilter::Info,
+        Some(Level::Debug) => LevelFilter::Debug,
+        Some(Level::Trace) => LevelFilter::Trace,
     };
 
     // If this is a debug build, just enable all logging by default
