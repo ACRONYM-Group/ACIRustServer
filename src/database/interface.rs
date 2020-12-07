@@ -12,8 +12,8 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct DatabaseInterface
 {
-    database: Arc<Database>,
-    permissions: Arc<CHashMap<String, Permission>>
+    pub database: Arc<Database>,
+    pub permissions: Arc<CHashMap<String, Permission>>
 }
 
 impl DatabaseInterface

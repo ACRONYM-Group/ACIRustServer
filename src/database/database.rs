@@ -178,4 +178,16 @@ impl Database
     {
         self.data.len()
     }
+
+    /// Gets all of the keys in the database
+    pub fn get_all_keys(&self) -> Result<Vec<String>, String>
+    {
+        let mut keys = vec![];
+        for (k, _) in (*self.data).clone().into_iter()
+        {
+            keys.push(k.clone());
+        }
+
+        Ok(keys)
+    }
 }

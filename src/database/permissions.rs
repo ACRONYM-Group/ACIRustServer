@@ -236,6 +236,35 @@ impl Permission
     {
         self.check_write(user.is_authed, &user.name, &user.domain)
     }
+
+    /// Produce json data for the permissions
+    pub fn create_json(&self) -> Result<Value, String>
+    {
+        let mut reads = vec![];
+        let mut writes = vec![];
+
+        for entry in &self.read_a_users
+        {
+            reads.push(json!(["a_user", entry]));
+        }
+
+        for entry in &self.read_g_users
+        {
+            reads.push(json!(["g_user", entry]));
+        }
+
+        for entry in &self.write_a_users
+        {
+            writes.push(json!(["a_user", entry]));
+        }
+
+        for entry in &self.write_g_users
+        {
+            writes.push(json!(["g_user", entry]));
+        }
+
+        Ok(json!({"read": reads, "write": writes}))
+    }
 }
 
 impl std::default::Default for Permission

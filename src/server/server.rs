@@ -1,6 +1,6 @@
 use chashmap::CHashMap;
 
-use crate::database::{DatabaseInterface, UserAuthentication};
+use crate::database::DatabaseInterface;
 
 use std::sync::Arc;
 

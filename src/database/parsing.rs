@@ -1,5 +1,5 @@
 use serde_json::Value;
-use log::{error, warn, info, trace};
+use log::{error, warn, info, debug, trace};
 
 use super::{Database, Permission, DatabaseInterface};
 use crate::args::Arguments;
@@ -107,7 +107,7 @@ pub fn database_from_disk(path: &std::path::PathBuf, name: &str, opt: &Arguments
 
     // Load database file
     let database_path = format!("{0}{1}/{1}.database", path, name);
-    trace!("Loading from `{}`", database_path);
+    debug!("Loading from `{}`", database_path);
 
     // Ensure the database file is a map
     let map = extract_object(&read_json(&database_path)?, "Database file data")?;
@@ -188,4 +188,115 @@ pub fn database_from_disk(path: &std::path::PathBuf, name: &str, opt: &Arguments
     }
 
     Ok(DatabaseInterface::new(Database::create(&database_key, database_data), permissions))
+}
+
+/// Write a database to disk
+pub fn database_to_disk(path: &std::path::PathBuf, database: DatabaseInterface, _: &Arguments) -> Result<(), String>
+{
+    let name = database.database.get_name();
+
+    info!("Writing database `{}` to {:?}", name, path);
+
+    // Convert path to a string, and correct if it does not end with a '/'
+    let mut path = if let Some(p) = path.to_str()
+    {
+        p.to_string()
+    }
+    else
+    {
+        let msg = format!("Unable to interpret path {:?}", path);
+        error!("{}", msg);
+        return Err(msg);
+    };
+
+    if !path.ends_with("/")
+    {
+        path += "/";
+    }
+
+    // Create the root path to the database
+    path = format!("{}{}/", path, name);
+
+    debug!("Using path `{}`", path);
+
+    // Make sure the directory exists
+    match std::fs::create_dir_all(&path)
+    {
+        Ok(()) => {},
+        Err(e) => 
+        {
+            let msg = format!("Unable to create database directory `{}`, {}", path, e);
+            error!("{}", msg);
+            return Err(msg);
+        }
+    }
+
+    // Produce the database JSON
+    let keys = database.database.get_all_keys()?;
+    let database_json = serde_json::json!({"dbKey": name, "ver": BUILD_VERSION, "keys": &keys});
+    let database_file_path = format!("{}{}.database", path, name);
+
+    info!("Writing database data to `{}`", database_file_path);
+
+    match std::fs::write(&database_file_path, database_json.to_string())
+    {
+        Ok(()) => {},
+        Err(e) => 
+        {
+            let msg = format!("Unable to write to file `{}`, {}", database_file_path, e);
+            error!("{}", msg);
+            return Err(msg);
+        }
+    }
+
+    // Produce the files for each key
+    for key in keys
+    {
+        trace!("Writing data for key `{}` in database `{}`", key, name);
+
+        // Get the permissions
+        let perm = match database.permissions.get(&key)
+        {
+            Some(v) => v,
+            None => 
+            {
+                let msg = format!("Key `{}` in database `{}` has not permissions set", key, name);
+                error!("{}", msg);
+                return Err(msg);
+            }
+        }.clone();
+
+        // Produce the json for the permission
+        let perm_json = perm.create_json()?;
+
+        // Produce the json for the file
+        let value = database.database.read(&key)?;
+
+        let type_str = match value
+        {
+            Value::Array(_) => "table",
+            Value::Object(_) => "obj",
+            _ => "string"
+        };
+
+        let item_json = serde_json::json!({"key": key, "value": value, "owner": "self", "permissions": perm_json, "subs": [], "type": type_str});
+
+        let item_file_path = format!("{}{}.item", path, key);
+
+        info!("Writing item data to `{}`", item_file_path);
+
+        // Write json data to the file
+        match std::fs::write(&item_file_path, item_json.to_string())
+        {
+            Ok(()) => {},
+            Err(e) => 
+            {
+                let msg = format!("Unable to write to file `{}`, {}", item_file_path, e);
+                error!("{}", msg);
+                return Err(msg);
+            }
+        }
+    }
+
+    Ok(())
 }
