@@ -131,16 +131,18 @@ impl Database
     }
 
     /// Append to an array stored in the hashmap
-    pub fn append(&self, key: &str, data: Value) -> Result<(), String>
+    pub fn append(&self, key: &str, data: Value) -> Result<usize, String>
     {
         trace!("Appending {} to `{}` in database {}", data, key, self.name);
 
         let mut array = self.read_key_array(key)?;
 
+        let l = array.len();
+
         array.push(data);
 
         self.write(key, Value::Array(array))?;
-        Ok(())
+        Ok(l)
     }
 
     /// Gets the length of an array stored in the hashmap

@@ -142,7 +142,7 @@ pub fn test_set_index()
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_index", "db_key": "test", "key": "list0", "index": 0, "val": json!(1)})).unwrap()),
                 Ok(Some(json!({"cmdType": "set_indexResp", "key": "list0", "msg": json!(1), "db_key": "test", "index": 0}))));
 
-    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_index", "db_key": "test", "key": "list0", "index": 1, "val": json!(1)})).unwrap()),
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_index", "db_key": "test", "key": "list0", "index": 1, "val": json!(2)})).unwrap()),
                 Ok(Some(json!({"cmdType": "set_indexResp", "key": "list0", "msg": json!(2), "db_key": "test", "index": 1}))));
                 
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_index", "db_key": "test", "key": "list0", "index": 2, "val": json!(3)})).unwrap()),

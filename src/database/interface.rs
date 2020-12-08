@@ -120,7 +120,7 @@ impl DatabaseInterface
     }
 
     /// Append to an array in a key in the database
-    pub fn append_to_key(&self, key: &str, data: Value, user: &UserAuthentication) -> Result<(), String>
+    pub fn append_to_key(&self, key: &str, data: Value, user: &UserAuthentication) -> Result<usize, String>
     {
         self.check_write(key, user, false)?;
         self.database.append(key, data)

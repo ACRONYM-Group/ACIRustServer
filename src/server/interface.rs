@@ -1,6 +1,6 @@
 use super::Server;
 
-use crate::database::UserAuthentication;
+use crate::database::{DatabaseInterface, Database, UserAuthentication};
 use crate::commands::{Command, Commands};
 
 use serde_json::{Value, json};
@@ -18,6 +18,30 @@ fn extract_string(val: &Value, title: &str) -> Result<String, String>
     else
     {
         let msg = format!("{} is not a string object", title);
+        error!("{}", msg);
+        return Err(msg);
+    }
+}
+
+/// Extract a number from a json value, or throw an error
+fn extract_number(val: &Value, title: &str) -> Result<usize, String>
+{
+    if let Value::Number(n) = val
+    {
+        if n.is_u64()
+        {
+            Ok(n.as_u64().unwrap() as usize)
+        }
+        else
+        {
+            let msg = format!("{} is not an unsigned int object", title);
+            error!("{}", msg);
+            return Err(msg);
+        }
+    }
+    else
+    {
+        let msg = format!("{} is not a number object", title);
         error!("{}", msg);
         return Err(msg);
     }
@@ -144,6 +168,122 @@ impl ServerInterface
                 let msg = format!("{}[{}]={}", db_key, key, data.to_string());
 
                 Ok(Some(json!({"cmdType": "setResp", "msg": msg, "key": key, "db_key": db_key, "val": data})))
+            },
+            Commands::GetIndex =>
+            {
+                self.is_auth("GetIndex")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+                let index = extract_number(cmd_map.get("index").unwrap(), "index")?;
+
+                let data = match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.read_from_key_index(&key, index, &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "get_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+            },
+            Commands::SetIndex =>
+            {
+                self.is_auth("SetIndex")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+                let index = extract_number(cmd_map.get("index").unwrap(), "index")?;
+
+                let data = cmd_map.get("val").unwrap();
+
+                match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.write_to_key_index(&key, index, data.clone(), &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "set_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+            },
+            Commands::AppendIndex =>
+            {
+                self.is_auth("AppendIndex")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+
+                let data = cmd_map.get("val").unwrap();
+
+                let index = match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.append_to_key(&key, data.clone(), &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "app_indexResp", "msg": data, "key": key, "db_key": db_key, "index": index})))
+            },
+            Commands::GetRecentIndex =>
+            {
+                self.is_auth("GetRecentIndex")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+                let index = extract_number(cmd_map.get("num").unwrap(), "read window")?;
+
+                let data = match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.read_last_n_from_key(&key, index, &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "get_recent_indexResp", "msg": data, "key": key, "db_key": db_key, "num": index})))
+            },
+            Commands::GetLengthIndex => 
+            {
+                self.is_auth("GetLengthIndex")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+
+                let index = match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.get_length_from_key(&key, &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "get_len_indexResp", "msg": index, "key": key, "db_key": db_key})))
+            },
+            Commands::CreateDatabase =>
+            {
+                self.is_auth("CreateDatabase")?;
+
+                let name = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                self.server.databases.insert(name.clone(), DatabaseInterface::new(Database::new(&name), chashmap::CHashMap::new()));
+                Ok(None)
             },
             default => 
             {
