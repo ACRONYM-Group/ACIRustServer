@@ -1,6 +1,6 @@
 //! Client Command Data
 use serde_json::Value;
-use log::{info, trace};
+use log::{trace, error};
 
 use super::verify_command;
 
@@ -54,7 +54,7 @@ impl Command
             Err(error) => 
             {
                 let msg = format!("Bad JSON Packet {:?}", error);
-                info!("{}", msg);
+                error!("{}", msg);
                 Err(CommandParsingError::BadJSON(msg))
             }
         }   
@@ -93,8 +93,8 @@ impl Command
                             "event" => Commands::Event,
                             _ => 
                             {
-                                let msg = format!("cmdType field not a string, got {:?}", cmd);
-                                info!("{}", msg);
+                                let msg = format!("cmdType field of an unknown type {:?}", cmd);
+                                error!("{}", msg);
                                 return Err(CommandParsingError::BadPacket(msg));
                             }
                         };
@@ -106,21 +106,21 @@ impl Command
                     else
                     {
                         let msg = format!("cmdType field not a string, got {:?}", cmd);
-                        info!("{}", msg);
+                        error!("{}", msg);
                         Err(CommandParsingError::BadPacket(msg))
                     }
                 }
                 else
                 {
                     let msg = "No cmdType field given".to_string();
-                    info!("{}", msg);
+                    error!("{}", msg);
                     Err(CommandParsingError::BadPacket(msg))
                 }
             },
             default => 
             {
                 let msg = format!("Parsed data is not an object, got {:?}", default);
-                info!("{}", msg);
+                error!("{}", msg);
                 Err(CommandParsingError::BadPacket(msg))
             }
         }

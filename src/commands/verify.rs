@@ -27,7 +27,6 @@ pub fn verify_command(command: &Command) -> Result<(), CommandParsingError>
     {
         for key in &keys
         {
-            println!("{}", key);
             if !object.contains_key(&key.to_string())
             {
                 return Err(CommandParsingError::ArgumentsNotPresent(format!("Command {:?} requires keys {:?}, did not find key {:?}", command.cmd, keys, key)));

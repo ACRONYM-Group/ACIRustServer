@@ -297,7 +297,7 @@ impl UserAuthentication
     {
         Self
         {
-            is_authed: false,
+            is_authed: true, // TODO: Change this back to false, this is for testing purposes
             name: String::new(),
             domain: String::new()
         }

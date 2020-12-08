@@ -1,7 +1,7 @@
 use structopt::StructOpt;
 
 /// Command line arguments to be parsed by StructOpt
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, Clone)]
 #[structopt(about = "Starts an ACI Server")]
 #[structopt(rename_all = "kebab-case")]
 pub struct Arguments
