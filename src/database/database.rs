@@ -188,6 +188,8 @@ impl Database
             keys.push(k.clone());
         }
 
+        keys.sort();
+
         Ok(keys)
     }
 }

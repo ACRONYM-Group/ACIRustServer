@@ -3,7 +3,7 @@ use super::Server;
 use crate::database::UserAuthentication;
 use crate::commands::{Command, Commands};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use log::{trace, error};
 
 use std::sync::Arc;
@@ -93,6 +93,57 @@ impl ServerInterface
 
                 self.server.write_database_to_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
                 Ok(None)
+            },
+            Commands::ListDatabases =>
+            {
+                self.is_auth("ListDatabases")?;
+
+                let keys = self.server.get_keys(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
+                Ok(Some(json!({"cmdType": "ldResp", "msg": keys})))
+            },
+            Commands::GetValue =>
+            {
+                self.is_auth("GetValue")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+
+                let data = match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.read_from_key(&key, &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                Ok(Some(json!({"cmdType": "getResp", "key": key, "db_key": db_key, "val": data})))
+            },
+            Commands::SetValue =>
+            {
+                self.is_auth("SetValue")?;
+
+                let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+                let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
+
+                let data = cmd_map.get("val").unwrap();
+
+                match self.server.databases.get(db_key)
+                {
+                    Some(v) => {v.write_to_key(&key, data.clone(), &self.user_profile)?},
+                    None => 
+                    {
+                        let msg = format!("No database with key `{}` initialized", db_key);
+                        error!("{}", msg);
+                        return Err(msg);
+                    }
+                };
+
+                let msg = format!("{}[{}]={}", db_key, key, data.to_string());
+
+                Ok(Some(json!({"cmdType": "setResp", "msg": msg, "key": key, "db_key": db_key, "val": data})))
             },
             default => 
             {

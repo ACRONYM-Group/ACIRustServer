@@ -12,13 +12,10 @@ use std::sync::Arc;
 pub struct Server
 {
     /// Database Interfaces
-    databases: Arc<CHashMap<String, DatabaseInterface>>,
+    pub databases: Arc<CHashMap<String, DatabaseInterface>>,
 
     /// Options
     opt: Arguments,
-
-    /// Database keys
-    database_keys: Vec<String>
 }
 
 impl Server
@@ -29,8 +26,7 @@ impl Server
         Self
         {
             databases: Arc::new(CHashMap::new()),
-            opt: opt.clone(),
-            database_keys: vec![]
+            opt: opt.clone()
         }
     }
 
@@ -57,15 +53,16 @@ impl Server
         Ok(())
     }
 
-    /// Get a list of all of the databases
-    pub fn get_list_of_databases(&self) -> Result<Vec<String>, String>
+    /// Get the array of keys in the given database
+    pub fn get_keys(&self, name: &str) -> Result<Vec<String>, String>
     {
-        let mut keys = vec![];
-        for (k, _) in (*self.databases).clone().into_iter()
+        if !self.databases.contains_key(name)
         {
-            keys.push(k.clone());
+            let msg = format!("No database with key `{}` initialized", name);
+            error!("{}", msg);
+            return Err(msg);
         }
 
-        Ok(keys)
+        Ok(self.databases.get(name).unwrap().database.get_all_keys()?)
     }
 }

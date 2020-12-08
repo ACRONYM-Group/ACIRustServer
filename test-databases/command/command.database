@@ -1,1 +1,1 @@
-{"dbKey":"command","keys":["test_end","test_begin","load_cell_known_mass"],"ver":"dev2020.12.06.1"}
+{"dbKey":"command","keys":["load_cell_known_mass","test_begin","test_end"],"ver":"dev2020.12.06.1"}

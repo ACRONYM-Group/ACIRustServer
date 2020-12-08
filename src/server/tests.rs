@@ -35,11 +35,6 @@ pub fn test_list_databases()
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "rfd", "db_key": "command"})).unwrap()), Ok(None));
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "list_databases", "db_key": "command"})).unwrap()),
                 Ok(Some(json!({"cmdType": "ldResp", "msg": ["load_cell_known_mass", "test_begin", "test_end"]}))));
-
-    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "rfd", "db_key": "status"})).unwrap()), Ok(None));
-    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "list_databases", "db_key": "status"})).unwrap()),
-                Ok(Some(json!({"cmdType": "ldResp", "msg": ["countdown_end", "counddown_start", "countdown", "led_state", "load_cell_state", "load_cell_up_time",
-                               "mode", "online", "relay_actuate", "relay_state", "shutting_down", "up_time"]}))));
 }
 
 #[test]
@@ -85,7 +80,7 @@ pub fn test_set_val()
                     {"cmdType": "setResp", "msg": "command[test_end]=\"True\"", "db_key": "command", "val": "True", "key": "test_end"}
                 ))));
 
-    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_val", "db_key": "command", "key": "load_cell_known_mass", "val": "True"})).unwrap()),
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmdType": "set_val", "db_key": "command", "key": "load_cell_known_mass", "val": 100})).unwrap()),
                 Ok(Some(json!(
                     {"cmdType": "setResp", "msg": "command[load_cell_known_mass]=100", "db_key": "command", "val": 100, "key": "load_cell_known_mass"}
                 ))));
