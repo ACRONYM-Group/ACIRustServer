@@ -18,6 +18,6 @@ pub struct Arguments
     pub allow_all: bool,
 
     /// Input file
-    #[structopt(parse(from_os_str))]
+    #[structopt(parse(from_os_str), default_value = "databases/")]
     pub path: std::path::PathBuf,
 }

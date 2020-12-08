@@ -3,7 +3,7 @@ use chashmap::CHashMap;
 use crate::database::{DatabaseInterface, database_from_disk, database_to_disk};
 use crate::args::Arguments;
 
-use log::{error, trace};
+use log::error;
 
 use std::sync::Arc;
 
@@ -16,6 +16,9 @@ pub struct Server
 
     /// Options
     opt: Arguments,
+
+    /// Database keys
+    database_keys: Vec<String>
 }
 
 impl Server
@@ -26,7 +29,8 @@ impl Server
         Self
         {
             databases: Arc::new(CHashMap::new()),
-            opt: opt.clone()
+            opt: opt.clone(),
+            database_keys: vec![]
         }
     }
 
@@ -51,5 +55,17 @@ impl Server
         database_to_disk(&self.opt.path.clone(), self.databases.get(name).unwrap().clone(), &self.opt)?;
 
         Ok(())
+    }
+
+    /// Get a list of all of the databases
+    pub fn get_list_of_databases(&self) -> Result<Vec<String>, String>
+    {
+        let mut keys = vec![];
+        for (k, _) in (*self.databases).clone().into_iter()
+        {
+            keys.push(k.clone());
+        }
+
+        Ok(keys)
     }
 }

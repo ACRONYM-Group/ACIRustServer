@@ -56,6 +56,12 @@ impl ServerInterface
         Ok(())
     }
 
+    /// Fake auth (for use for testing)
+    pub fn fake_auth(&mut self)
+    {
+        self.user_profile.is_authed = true;
+    }
+
     /// Execute a command on the database
     pub fn execute_command(&mut self, command: Command) -> Result<Option<Value>, String>
     {
@@ -79,21 +85,21 @@ impl ServerInterface
                 self.is_auth("ReadFromDisk")?;
 
                 self.server.read_database_from_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
+                Ok(None)
             },
             Commands::WriteToDisk =>
             {
                 self.is_auth("WriteToDisk")?;
 
                 self.server.write_database_to_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
+                Ok(None)
             },
             default => 
             {
                 let msg = format!("Command `{:?}` not yet implemented", default);
                 error!("{}", msg);
-                return Err(msg);
+                Err(msg)
             }
         }
-
-        Ok(None)
     }
 }

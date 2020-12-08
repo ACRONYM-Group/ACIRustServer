@@ -9,9 +9,15 @@ fn main()
     let opt = args::Arguments::from_args();
     logging::initialize_logging(&opt);
 
-    let server = server::Server::new(&opt);
-    let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
+    let db = database::Database::new("test");
+    let dbi = database::DatabaseInterface::new(db, chashmap::CHashMap::new());
 
-    conn.execute_command(commands::Command::from_json(serde_json::json!({"cmdType": "rfd", "db_key": "command"})).unwrap()).unwrap();
-    println!("{:?}", conn.execute_command(commands::Command::from_json(serde_json::json!({"cmdType": "get_val", "db_key": "command", "key": "test_end"})).unwrap()).unwrap());
+    let mut user = database::UserAuthentication::new();
+    user.is_authed = true;
+
+    dbi.write_to_key("list0", serde_json::json!([0, 1, "2", "3", true, 4.0, false]), &user).unwrap();
+    dbi.write_to_key("list1", serde_json::json!([]), &user).unwrap();
+    dbi.write_to_key("list2", serde_json::json!([0, 1, false]), &user).unwrap();
+
+    database::database_to_disk(&opt.path.clone(), dbi, &opt).unwrap();
 }
