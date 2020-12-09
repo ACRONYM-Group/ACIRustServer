@@ -20,4 +20,8 @@ pub struct Arguments
     /// Input file
     #[structopt(parse(from_os_str), default_value = "databases/")]
     pub path: std::path::PathBuf,
+
+    /// Config Path
+    #[structopt(parse(from_os_str), default_value = "databases-dev/")]
+    pub config_path: std::path::PathBuf,
 }

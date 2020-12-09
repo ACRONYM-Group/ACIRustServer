@@ -14,7 +14,7 @@ pub fn test_read_write_disk()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -28,7 +28,7 @@ pub fn test_list_databases()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -43,7 +43,7 @@ pub fn test_get_val()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -64,7 +64,7 @@ pub fn test_set_val()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -101,7 +101,7 @@ pub fn test_get_index()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -134,7 +134,7 @@ pub fn test_set_index()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -167,7 +167,7 @@ pub fn test_append()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -188,7 +188,7 @@ pub fn test_get_length()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -209,7 +209,7 @@ pub fn test_get_recent()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 
@@ -230,7 +230,7 @@ pub fn test_create_database()
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
 
-    let server = server::Server::new(&opt);
+    let server = server::Server::new(&opt).unwrap();
     let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
     conn.fake_auth();
 

@@ -285,6 +285,22 @@ impl ServerInterface
                 self.server.databases.insert(name.clone(), DatabaseInterface::new(Database::new(&name), chashmap::CHashMap::new()));
                 Ok(None)
             },
+            Commands::AcronymAuth =>
+            {
+                let id = extract_string(cmd_map.get("id").unwrap(), "user id")?;
+                let token = extract_string(cmd_map.get("token").unwrap(), "user token")?;
+
+                let (result, msg) = self.server.check_a_auth(&id, &token)?;
+
+                if result
+                {
+                    self.user_profile.is_authed = true;
+                    self.user_profile.domain = "a_auth".to_string();
+                    self.user_profile.name = id;
+                }
+
+                Ok(Some(json!({"cmdType": "a_auth_response", "msg": msg})))
+            },
             default => 
             {
                 let msg = format!("Command `{:?}` not yet implemented", default);
