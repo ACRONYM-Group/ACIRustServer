@@ -18,7 +18,7 @@ pub struct Arguments
     pub allow_all: bool,
 
     /// Input file
-    #[structopt(parse(from_os_str), default_value = "databases/")]
+    #[structopt(parse(from_os_str), default_value = "test-databases/")]
     pub path: std::path::PathBuf,
 
     /// Config Path

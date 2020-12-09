@@ -123,7 +123,10 @@ impl ServerInterface
                 self.is_auth("ListDatabases")?;
 
                 let keys = self.server.get_keys(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(Some(json!({"cmdType": "ldResp", "msg": keys})))
+
+                let msg = json!(keys).to_string();
+
+                Ok(Some(json!({"cmdType": "ldResp", "msg": msg})))
             },
             Commands::GetValue =>
             {
@@ -301,6 +304,12 @@ impl ServerInterface
 
                 Ok(Some(json!({"cmdType": "a_auth_response", "msg": msg})))
             },
+            Commands::Event =>
+            {
+                let msg = format!("Event command should never make it to the server interface");
+                error!("{}", msg);
+                Err(msg)
+            }
             default => 
             {
                 let msg = format!("Command `{:?}` not yet implemented", default);
