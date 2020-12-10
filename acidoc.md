@@ -247,7 +247,7 @@ The `msg` field returns any acknowledgement or error message to the client to re
 
 In addition to these fields, there are some 
 
-An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields filled along with any of the necessary arguments, and an `"ack"` response is expected to have the `cmd`, and `mode` fields filled, along with any of the necessary arguments.
+An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields filled, and an `"ack"` response is expected to have the `cmd`, and `mode` fields filled, along with any of the necessary arguments.
 
 ### Note
 

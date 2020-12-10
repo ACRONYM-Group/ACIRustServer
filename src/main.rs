@@ -24,30 +24,121 @@ fn main()
         let mut conn = server::ServerInterface::new(&aci.clone());
         spawn (move ||
             {
-            let mut websocket = accept(stream.unwrap()).unwrap();
+                log::info!("Got a connection!");
 
-            log::info!("Got a connection!");
-
-            loop
-            {
-                let msg = websocket.read_message().unwrap();
-
-                // We do not want to send back ping/pong messages.
-                if msg.is_binary() || msg.is_text()
+                if stream.is_ok()
                 {
-                    let text = msg.clone().into_text().unwrap();
-                    log::info!("Recieved Message: `{}`", text);
-
-                    let result = conn.execute_command(commands::Command::from_string(&text).unwrap()).unwrap();
-
-                    if result.is_some()
+                    match accept(stream.unwrap())
                     {
-                        let msg = result.unwrap();
-                        log::info!("Response: {}", msg);
-                        websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
+                        Ok(mut websocket) => 
+                        {
+                            loop
+                            {
+                                match websocket.read_message()
+                                {
+                                    Ok(msg) =>
+                                    {
+                                        if msg.is_text()
+                                        {
+                                            // This is ok because it is checked in the above if statement
+                                            let text = msg.clone().into_text().unwrap();
+                                            log::info!("Recieved Message: `{}`", text);
+
+                                            match serde_json::from_str(&text)
+                                            {
+                                                Ok(data) =>
+                                                {
+                                                    let data: serde_json::Value = data;
+                                                    match commands::Command::from_json(data.clone())
+                                                    {
+                                                        Ok(command) =>
+                                                        {
+                                                            match conn.execute_command(command)
+                                                            {
+                                                                Ok(result) =>
+                                                                {
+                                                                    if result.is_some()
+                                                                    {
+                                                                        // This is ok because it is checked again
+                                                                        let msg = result.unwrap();
+                                                                        log::info!("Response: {}", msg);
+                                                                        websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        log::warn!("Not sending response per server interface responding with None");
+                                                                    }
+                                                                },
+                                                                Err(e) =>
+                                                                {
+                                                                    let cmd = if let serde_json::Value::Object(data) = data
+                                                                    {
+                                                                        if data.contains_key("cmd")
+                                                                        {
+                                                                            data.get("cmd").unwrap().clone()
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            serde_json::json!("unknown")
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        serde_json::json!("unknown")
+                                                                    };
+
+                                                                    let msg = serde_json::json!({"cmd": cmd, "mode": "error", "msg": format!("{}", e)});
+                                                                    websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
+                                                                }
+                                                            }
+                                                        },
+                                                        Err(e) =>
+                                                        {
+                                                            let cmd = if let serde_json::Value::Object(data) = data
+                                                            {
+                                                                if data.contains_key("cmd")
+                                                                {
+                                                                    data.get("cmd").unwrap().clone()
+                                                                }
+                                                                else
+                                                                {
+                                                                    serde_json::json!("unknown")
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                serde_json::json!("unknown")
+                                                            };
+
+                                                            let msg = serde_json::json!({"cmd": cmd, "mode": "error", "msg": format!("{:?}", e)});
+                                                            websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
+                                                        }
+                                                    }
+                                                },
+                                                Err(e) =>
+                                                {
+                                                    log::error!("Unable to parse message from json, {}", e);
+                                                }
+                                            }
+                                        }
+                                    },
+                                    Err(e) =>
+                                    {
+                                        log::error!("Unable to parse websocket, {}", e);
+                                    }
+                                }
+                            }
+                        },
+                        Err(e) =>
+                        {
+                            log::error!("Unable to accept stream, {}", e);
+                        }
                     }
                 }
-            }
+                else
+                {
+                    log::error!("Stream is not able to be unwraped, {}", stream.unwrap_err());
+                }
         });
     }
 }
