@@ -85,7 +85,7 @@ pub fn test_command_parsing_json_failure()
 pub fn test_command_parsing_packet_failure()
 {
     let examples = vec![
-        "{\"cmd\": \"write_to_disk\", \"db_key\": \"DB_KEY\"}",
+        "{\"cm\": \"write_to_disk\", \"db_key\": \"DB_KEY\"}",
         "{\"cmdTye\": \"read_from_disk\", \"db_key\": \"DB_KEY\"}",
         "{\"cmd\": [0, 1, 2, 3], \"db_key\": \"DB_KEY\"}",
         "{\"cmd\": {\"a\": 0, \"b\": 1},\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}"];

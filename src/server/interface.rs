@@ -108,25 +108,29 @@ impl ServerInterface
             {
                 self.is_auth("ReadFromDisk")?;
 
-                self.server.read_database_from_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(None)
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                self.server.read_database_from_disk(&db_key)?;
+                Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": db_key})))
             },
             Commands::WriteToDisk =>
             {
                 self.is_auth("WriteToDisk")?;
 
-                self.server.write_database_to_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(None)
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                self.server.write_database_to_disk(&db_key)?;
+                Ok(Some(json!({"cmd": "write_to_disk", "mode": "ok", "msg": "", "db_key": db_key})))
             },
             Commands::ListDatabases =>
             {
                 self.is_auth("ListDatabases")?;
 
-                let keys = self.server.get_keys(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
 
-                let msg = json!(keys).to_string();
+                let keys = self.server.get_keys(&db_key)?;
 
-                Ok(Some(json!({"cmdType": "ldResp", "msg": msg})))
+                Ok(Some(json!({"cmd": "list_keys", "mode": "ok", "msg": "", "db_key": db_key, "val": keys})))
             },
             Commands::GetValue =>
             {
@@ -146,7 +150,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "getResp", "key": key, "db_key": db_key, "val": data})))
+                Ok(Some(json!({"cmd": "get_value", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "val": data})))
             },
             Commands::SetValue =>
             {
@@ -168,9 +172,7 @@ impl ServerInterface
                     }
                 };
 
-                let msg = format!("{}[{}]={}", db_key, key, data.to_string());
-
-                Ok(Some(json!({"cmdType": "setResp", "msg": msg, "key": key, "db_key": db_key, "val": data})))
+                Ok(Some(json!({"cmd": "set_value", "mode": "ok", "msg": "", "key": key, "db_key": db_key,})))
             },
             Commands::GetIndex =>
             {
@@ -191,7 +193,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+                Ok(Some(json!({"cmd": "get_index", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index, "val": data})))
             },
             Commands::SetIndex =>
             {
@@ -214,7 +216,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "set_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+                Ok(Some(json!({"cmd": "set_index", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index})))
             },
             Commands::AppendIndex =>
             {
@@ -236,7 +238,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "app_indexResp", "msg": data, "key": key, "db_key": db_key, "index": index})))
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index})))
             },
             Commands::GetRecentIndex =>
             {
@@ -257,7 +259,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_recent_indexResp", "msg": data, "key": key, "db_key": db_key, "num": index})))
+                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "val": data})))
             },
             Commands::GetLengthIndex => 
             {
@@ -266,7 +268,7 @@ impl ServerInterface
                 let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
 
-                let index = match self.server.databases.get(db_key)
+                let length = match self.server.databases.get(db_key)
                 {
                     Some(v) => {v.get_length_from_key(&key, &self.user_profile)?},
                     None => 
@@ -277,7 +279,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_len_indexResp", "msg": index, "key": key, "db_key": db_key})))
+                Ok(Some(json!({"cmd": "get_list_length", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "length": length})))
             },
             Commands::CreateDatabase =>
             {
@@ -286,7 +288,7 @@ impl ServerInterface
                 let name = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
 
                 self.server.databases.insert(name.clone(), DatabaseInterface::new(Database::new(&name), chashmap::CHashMap::new()));
-                Ok(None)
+                Ok(Some(json!({"cmd": "create_database", "mode": "ok", "msg": "", "db_key": name})))
             },
             Commands::AcronymAuth =>
             {
@@ -302,7 +304,7 @@ impl ServerInterface
                     self.user_profile.name = id;
                 }
 
-                Ok(Some(json!({"cmdType": "a_auth_response", "msg": msg})))
+                Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": msg})))
             },
             Commands::Event =>
             {

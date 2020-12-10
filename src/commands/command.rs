@@ -69,7 +69,7 @@ impl Command
         {
             Value::Object(data) =>
             {
-                if let Some(cmd) = data.get("cmdType")
+                if let Some(cmd) = data.get("cmd")
                 {
                     if let Value::String(cmd_str) = cmd
                     {
@@ -77,23 +77,23 @@ impl Command
                         
                         let cmd_type = match cmd_str.as_str()
                         {
-                            "wtd" => Commands::WriteToDisk,
-                            "rfd" => Commands::ReadFromDisk,
-                            "list_databases" => Commands::ListDatabases,
-                            "get_val" => Commands::GetValue,
-                            "set_val" => Commands::SetValue,
+                            "write_to_disk" => Commands::WriteToDisk,
+                            "read_from_disk" => Commands::ReadFromDisk,
+                            "list_keys" => Commands::ListDatabases,
+                            "get_value" => Commands::GetValue,
+                            "set_value" => Commands::SetValue,
                             "get_index" => Commands::GetIndex,
                             "set_index" => Commands::SetIndex,
-                            "append_index" => Commands::AppendIndex,
-                            "get_len_index" => Commands::GetLengthIndex,
-                            "get_recent_index" => Commands::GetRecentIndex,
-                            "cdb" => Commands::CreateDatabase,
+                            "append_list" => Commands::AppendIndex,
+                            "get_list_length" => Commands::GetLengthIndex,
+                            "get_recent" => Commands::GetRecentIndex,
+                            "create_database" => Commands::CreateDatabase,
                             "a_auth" => Commands::AcronymAuth,
                             "g_auth" => Commands::GoogleAuth,
                             "event" => Commands::Event,
                             _ => 
                             {
-                                let msg = format!("cmdType field of an unknown type {:?}", cmd);
+                                let msg = format!("cmd field of an unknown type {:?}", cmd);
                                 error!("{}", msg);
                                 return Err(CommandParsingError::BadPacket(msg));
                             }
@@ -105,14 +105,14 @@ impl Command
                     }
                     else
                     {
-                        let msg = format!("cmdType field not a string, got {:?}", cmd);
+                        let msg = format!("cmd field not a string, got {:?}", cmd);
                         error!("{}", msg);
                         Err(CommandParsingError::BadPacket(msg))
                     }
                 }
                 else
                 {
-                    let msg = "No cmdType field given".to_string();
+                    let msg = "No cmd field given".to_string();
                     error!("{}", msg);
                     Err(CommandParsingError::BadPacket(msg))
                 }
