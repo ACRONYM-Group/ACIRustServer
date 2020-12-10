@@ -41,9 +41,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database.
 
-The server will repond with a response packet with the `cmd` field set to `"write_to_disk"` with the `data` field filled with the `db_key` field. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"write_to_disk"` with the `db_key` field. The response to a proper execution would be
 
-`{"cmd": "write_to_disk", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY"}}`
+`{"cmd": "write_to_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}`
 
 ### read_from_disk
 
@@ -55,9 +55,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database.
 
-The server will repond with a response packet with the `cmd` field set to `"read_from_disk"` with the `data` field filled with the `db_key` field. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"read_from_disk"` with  the `db_key` field. The response to a proper execution would be
 
-`{"cmd": "read_from_disk", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY"}}`
+`{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}`
 
 ### list_keys
 
@@ -69,9 +69,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database.
 
-The server will repond with a response packet with the `cmd` field set to `"list_keys"` with the `data` field filled with the `db_key` field, and a `val` field filled with a list of keys. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"list_keys"` with the `db_key` field, and a `val` field filled with a list of keys. The response to a proper execution would be
 
-`{"cmd": "list_keys", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "val": ["key0", "key1", ...]}}`
+`{"cmd": "list_keys", "mode": "ok", "msg":"", "db_key":"DBKEY", "val": ["key0", "key1", ...]}`
 
 ### get_value
 
@@ -83,9 +83,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database.
 
-The server will repond with a response packet with the `cmd` field set to `"get_value"` with the `data` field filled with the `db_key` field and the `key` field, and a `val` field filled with the data read from the key. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"get_value"` with the `db_key` field and the `key` field, and a `val` field filled with the data read from the key. The response to a proper execution would be
 
-`{"cmd": "get_value", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "val": Value}}`
+`{"cmd": "get_value", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "val": Value}`
 
 ### set_value
 
@@ -97,9 +97,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database, and the `val` parameter is the value to be written.
 
-The server will repond with a response packet with the `cmd` field set to `"set_value"` with the `data` field filled with the `db_key` field and the `key` field. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"set_value"` with the `db_key` field and the `key` field. The response to a proper execution would be
 
-`{"cmd": "set_value", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY"}}`
+`{"cmd": "set_value", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY"}`
 
 ### get_index
 
@@ -111,9 +111,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database
 
-The server will repond with a response packet with the `cmd` field set to `"get_index"` with the `data` field filled with the `db_key` field, the `key` field, the `index` field, and a `val` field filled with the data read from the key. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"get_index"` with the `db_key` field, the `key` field, the `index` field, and a `val` field filled with the data read from the key. The response to a proper execution would be
 
-`{"cmd": "get_index", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "index": Index, "val": Value}}`
+`{"cmd": "get_index", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "index": Index, "val": Value}`
 
 ### set_index
 
@@ -125,9 +125,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database, the `val` parameter is the value to be written, and the `index` parameter must be an integer and the index into the key in the database.
 
-The server will repond with a response packet with the `cmd` field set to `"set_index"` with the `data` field filled with the `db_key` field, the `key` field, and the `index` field. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"set_index"` with the `db_key` field, the `key` field, and the `index` field. The response to a proper execution would be
 
-`{"cmd": "set_index", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "index": Index}}`
+`{"cmd": "set_index", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "index": Index}`
 
 ### append_list
 
@@ -139,9 +139,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database, and the `val` parameter is the value to be appended.
 
-The server will repond with a response packet with the `cmd` field set to `"append_list"` with the `data` field filled with the `db_key` field, the `key` field, and the `index` field filled with the index of the item appended to the list. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"append_list"` with the `db_key` field, the `key` field, and the `index` field filled with the index of the item appended to the list. The response to a proper execution would be
 
-`{"cmd": "append_list", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "index": Index}}`
+`{"cmd": "append_list", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "index": Index}`
 
 ### get_list_length
 
@@ -153,9 +153,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database.
 
-The server will repond with a response packet with the `cmd` field set to `"get_list_length"` with the `data` field filled with the `db_key` field, the `key` field, and the `length` field filled with the length of the list as a number. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"get_list_length"` with the `db_key` field, the `key` field, and the `length` field filled with the length of the list as a number. The response to a proper execution would be
 
-`{"cmd": "get_list_length", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "length": Length}}`
+`{"cmd": "get_list_length", "mode": "ok", "msg":"","db_key":"DBKEY", "key": "ITEMKEY", "length": Length}`
 
 ### get_recent
 
@@ -167,9 +167,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database,the `key` parameter must be a string and the name of the key in the database, and then `num` parameter must be an integer and be the number of items expected.
 
-The server will repond with a response packet with the `cmd` field set to `"get_recent"` with the `data` field filled with the `db_key` field, the `key` field, and the `val` field filled with an list holding the last `num` values in the list. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"get_recent"` with the `db_key` field, the `key` field, and the `val` field filled with an list holding the last `num` values in the list. The response to a proper execution would be
 
-`{"cmd": "get_recent", "mode": "ok", "msg":"", "data": {"db_key":"DBKEY", "key": "ITEMKEY", "val": Value}}`
+`{"cmd": "get_recent", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "val": Value}`
 
 ### create_database
 
@@ -181,9 +181,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string.
 
-The server will repond with a response packet with the `cmd` field set to `"get_recent"` with the `data` field filled with the `db_key` field. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"get_recent"` with the `db_key` field. The response to a proper execution would be
 
-`{"cmd": "create_database", "mode": "ok", "msg": "", "data":{"db_key": "DBKEY"}}`
+`{"cmd": "create_database", "mode": "ok", "msg": """db_key": "DBKEY"}`
 
 ### a_auth
 
@@ -195,9 +195,9 @@ The command sent to the server is of the form
 
 The `id` parameter must be a string and be the id of the user authenticating, and the `token` parameter must be a string and be the token for the user authenticating.
 
-The server will repond with a response packet with the `cmd` field set to `"a_auth"` with the `data` field filled with an empty object (only one authentication should be performed per connection). The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"a_auth"`, no other information is required as only one authentication is required per connection. The response to a proper execution would be
 
-`{"cmd": "a_auth", "mode": "ok", msg: "", "data":{}}`
+`{"cmd": "a_auth", "mode": "ok", msg: ""}`
 
 ### g_auth
 
@@ -209,9 +209,9 @@ The command sent to the server is of the form
 
 The `id_token` parameter must be a string and be the id token of the user authenticating.
 
-The server will repond with a response packet with the `cmd` field set to `"g_auth"` with the `data` field filled with an empty object (only one authentication should be performed per connection). The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"g_auth"`, no other information is required as only one authentication is required per connection. The response to a proper execution would be
 
-`{"cmd": "g_auth", "mode": "ok", msg: "", "data":{}}`
+`{"cmd": "g_auth", "mode": "ok", msg: ""`
 
 ### event
 
@@ -223,15 +223,15 @@ The command sent to the server is of the form
 
 The `event_id` parameter must be a string, the `destination` parameter must be a string and be the id of the destination of the event transmission, the `origin` parameter must be a string and be the id of the origin of the event transmission, and the `data` parameter is any json object.
 
-The server will respond with an `"ack"` packet with the `data` parameter filled with only the `event_id` and `origin` parameters if the event makes it to the server. This response would be
+The server will respond with an `"ack"` packet with the `event_id` and `origin` parameters if the event makes it to the server. This response would be
 
-`{"cmd": "event", "mode": "ack", "data": {"event_id": "EVENTID", "origin": "ORIGIN"}}`
+`{"cmd": "event", "mode": "ack", "event_id": "EVENTID", "origin": "ORIGIN"}`
 
 ## 3. Response formats
 
 All response packets are of the form
 
-`{"cmd": "cmd", "mode": "MODE", "msg": "Message", "data": Data}`
+`{"cmd": "cmd", "mode": "MODE", "msg": "Message"...}`
 
 Where the `cmd` field is the original command sent to the server.
 
@@ -245,9 +245,9 @@ to denote what type of response is being returned.
 
 The `msg` field returns any acknowledgement or error message to the client to relay any information from the server in the form of a string.
 
-The `data` field includes any return value (list of keys, value, etc.), and all of the arguments sent to the command (except any value which has been written as that value could be very large and would waste bandwidth in returning it).
+In addition to these fields, there are some 
 
-An `"error"` response is expected to have the `cmd`, `mode`, `data` and `msg` fields filled, and an `"ack"` response is expected to have the `cmd`, `data` and `mode` fields filled.
+An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields filled along with any of the necessary arguments, and an `"ack"` response is expected to have the `cmd`, and `mode` fields filled, along with any of the necessary arguments.
 
 ### Note
 
