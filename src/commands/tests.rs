@@ -5,20 +5,20 @@ use super::{Commands, CommandParsingError, Command};
 fn test_command_parsing(test_output: bool)
 {
     let examples = vec![
-        "{\"cmdType\": \"wtd\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"rfd\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"list_databases\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"get_val\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"set_val\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"get_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"index\":42}",
-        "{\"cmdType\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
-        "{\"cmdType\": \"append_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"get_len_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"get_recent_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"num\": 42}",
-        "{\"cmdType\": \"cdb\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"a_auth\", \"id\": \"ID\", \"token\":\"TOKEN\"}",
-        "{\"cmdType\": \"g_auth\", \"id_token\": \"ID_TOKEN\"}",
-        "{\"cmdType\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}"];
+        "{\"cmd\": \"write_to_disk\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"read_from_disk\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"list_keys\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_value\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"set_value\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"get_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"index\":42}",
+        "{\"cmd\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
+        "{\"cmd\": \"append_list\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"get_list_length\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_recent\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"num\": 42}",
+        "{\"cmd\": \"create_database\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"a_auth\", \"id\": \"ID\", \"token\":\"TOKEN\"}",
+        "{\"cmd\": \"g_auth\", \"id_token\": \"ID_TOKEN\"}",
+        "{\"cmd\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}"];
 
     let cmd_types = vec![Commands::WriteToDisk, Commands::ReadFromDisk, Commands::ListDatabases,
                                     Commands::GetValue, Commands::SetValue, Commands::GetIndex,
@@ -57,10 +57,10 @@ pub fn test_command_parsing_output()
 pub fn test_command_parsing_json_failure()
 {
     let examples = vec![
-        "{\"cmdType\": \"wtd\", db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"rfd\", \"db_key\": \"DB_KEY\"",
-        "{\"cmdType\": \"list_databases\", \"db_key\" \"DB_KEY\"}",
-        "{cmdType\": \"get_val\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}"];
+        "{\"cmd\": \"write_to_disk\", db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"read_from_disk\", \"db_key\": \"DB_KEY\"",
+        "{\"cmd\": \"list_keys\", \"db_key\" \"DB_KEY\"}",
+        "{cmd\": \"get_value\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}"];
 
     for example in examples
     {
@@ -85,10 +85,10 @@ pub fn test_command_parsing_json_failure()
 pub fn test_command_parsing_packet_failure()
 {
     let examples = vec![
-        "{\"cmdType\": \"wt\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmd\": \"rfd\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": [0, 1, 2, 3], \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": {\"a\": 0, \"b\": 1},\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}"];
+        "{\"cmd\": \"write_to_disk\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmdTye\": \"read_from_disk\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": [0, 1, 2, 3], \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": {\"a\": 0, \"b\": 1},\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}"];
 
     for example in examples
     {
@@ -112,48 +112,48 @@ pub fn test_command_parsing_packet_failure()
 pub fn test_command_parsing_packet_arguments_failure()
 {
     let examples = vec![
-        "{\"cmdType\": \"wtd\", \"db_ky\": \"DB_KEY\"}",
-        "{\"cmdType\": \"rfd\", \"db_ke\": \"DB_KEY\"}",
-        "{\"cmdType\": \"list_databases\", \"db_ky\": \"DB_KEY\"}",
-        "{\"cmdType\": \"get_val\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"get_val\",\"key\":\"KEY\", \"db_ky\": \"DB_KEY\"}",
+        "{\"cmd\": \"write_to_disk\", \"db_ky\": \"DB_KEY\"}",
+        "{\"cmd\": \"read_from_disk\", \"db_ke\": \"DB_KEY\"}",
+        "{\"cmd\": \"list_keys\", \"db_ky\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_value\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_value\",\"key\":\"KEY\", \"db_ky\": \"DB_KEY\"}",
 
-        "{\"cmdType\": \"set_val\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"set_val\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"set_val\",\"key\":\"KEY\", \"db_key\": \"DB_KE\", \"va\":\"DATA\"}",
+        "{\"cmd\": \"set_value\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"set_value\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"set_value\",\"key\":\"KEY\", \"db_key\": \"DB_KE\", \"va\":\"DATA\"}",
 
-        "{\"cmdType\": \"get_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"index\":42}",
-        "{\"cmdType\": \"get_index\",\"key\":\"KEY\", \"db_ky\": \"DB_KEY\", \"index\":42}",
-        "{\"cmdType\": \"get_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"inde\":42}",
+        "{\"cmd\": \"get_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"index\":42}",
+        "{\"cmd\": \"get_index\",\"key\":\"KEY\", \"db_ky\": \"DB_KEY\", \"index\":42}",
+        "{\"cmd\": \"get_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"inde\":42}",
 
-        "{\"cmdType\": \"set_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
-        "{\"cmdType\": \"set_index\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
-        "{\"cmdType\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"va\":\"DATA\", \"index\":42}",
-        "{\"cmdType\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"inde\":42}",
+        "{\"cmd\": \"set_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
+        "{\"cmd\": \"set_index\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\", \"index\":42}",
+        "{\"cmd\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"va\":\"DATA\", \"index\":42}",
+        "{\"cmd\": \"set_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\", \"inde\":42}",
 
 
-        "{\"cmdType\": \"append_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"append_index\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\"}",
-        "{\"cmdType\": \"append_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"va\":\"DATA\"}",
+        "{\"cmd\": \"append_list\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"append_list\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"val\":\"DATA\"}",
+        "{\"cmd\": \"append_list\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"va\":\"DATA\"}",
 
-        "{\"cmdType\": \"get_len_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\"}",
-        "{\"cmdType\": \"get_len_index\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_list_length\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"get_list_length\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\"}",
 
-        "{\"cmdType\": \"get_recent_index\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"num\": 42}",
-        "{\"cmdType\": \"get_recent_index\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"num\": 42}",
-        "{\"cmdType\": \"get_recent_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"nu\": 42}",
+        "{\"cmd\": \"get_recent\",\"ke\":\"KEY\", \"db_key\": \"DB_KEY\", \"num\": 42}",
+        "{\"cmd\": \"get_recent\",\"key\":\"KEY\", \"db_ke\": \"DB_KEY\", \"num\": 42}",
+        "{\"cmd\": \"get_recent\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"nu\": 42}",
 
-        "{\"cmdType\": \"cdb\", \"db_ke\": \"DB_KEY\"}",
+        "{\"cmd\": \"create_database\", \"db_ke\": \"DB_KEY\"}",
 
-        "{\"cmdType\": \"a_auth\", \"i\": \"ID\", \"token\":\"TOKEN\"}",
-        "{\"cmdType\": \"a_auth\", \"id\": \"ID\", \"tokn\":\"TOKEN\"}",
+        "{\"cmd\": \"a_auth\", \"i\": \"ID\", \"token\":\"TOKEN\"}",
+        "{\"cmd\": \"a_auth\", \"id\": \"ID\", \"tokn\":\"TOKEN\"}",
 
-        "{\"cmdType\": \"g_auth\", \"id_tokn\": \"ID_TOKEN\"}",
+        "{\"cmd\": \"g_auth\", \"id_tokn\": \"ID_TOKEN\"}",
 
-        "{\"cmdType\": \"event\", \"event_i\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}",
-        "{\"cmdType\": \"event\", \"event_id\":\"ID\", \"destinatio\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}",
-        "{\"cmdType\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origi\": \"ORIGIN\", \"data\": \"DATA\"}",
-        "{\"cmdType\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"dat\": \"DATA\"}"];
+        "{\"cmd\": \"event\", \"event_i\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}",
+        "{\"cmd\": \"event\", \"event_id\":\"ID\", \"destinatio\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}",
+        "{\"cmd\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origi\": \"ORIGIN\", \"data\": \"DATA\"}",
+        "{\"cmd\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"dat\": \"DATA\"}"];
 
     for example in examples
     {
