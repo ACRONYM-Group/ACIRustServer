@@ -183,7 +183,7 @@ The `db_key` parameter must be a string.
 
 The server will repond with a response packet with the `cmd` field set to `"get_recent"` with the `db_key` field. The response to a proper execution would be
 
-`{"cmd": "create_database", "mode": "ok", "msg": """db_key": "DBKEY"}`
+`{"cmd": "create_database", "mode": "ok", "msg": "", "db_key": "DBKEY"}`
 
 ### a_auth
 
