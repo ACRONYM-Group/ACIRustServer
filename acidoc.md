@@ -139,9 +139,9 @@ The command sent to the server is of the form
 
 The `db_key` parameter must be a string and the name of a loaded database, and the `key` parameter must be a string and the name of the key in the database, and the `val` parameter is the value to be appended.
 
-The server will repond with a response packet with the `cmd` field set to `"append_list"` with the `db_key` field, the `key` field, and the `index` field filled with the index of the item appended to the list. The response to a proper execution would be
+The server will repond with a response packet with the `cmd` field set to `"append_list"` with the `db_key` field, the `key` field, and the `next` field filled with the index of the item appended to the list. The response to a proper execution would be
 
-`{"cmd": "append_list", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "index": Index}`
+`{"cmd": "append_list", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY", "next": Index}`
 
 ### get_list_length
 

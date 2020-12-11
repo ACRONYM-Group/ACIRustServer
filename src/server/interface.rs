@@ -238,7 +238,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index})))
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "next": index})))
             },
             Commands::GetRecentIndex =>
             {

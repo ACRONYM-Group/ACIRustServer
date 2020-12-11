@@ -185,13 +185,13 @@ pub fn test_append()
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "read_from_disk", "db_key": "test"})).unwrap()), 
                 Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": "test"}))));
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "append_list", "db_key": "test", "key": "list0", "val": json!(1)})).unwrap()),
-                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "index": 7}))));
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "next": 7}))));
 
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "append_list", "db_key": "test", "key": "list0", "val": json!(5)})).unwrap()),
-                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "index": 8}))));
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "next": 8}))));
 
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "append_list", "db_key": "test", "key": "list0", "val": json!(true)})).unwrap()),
-                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "index": 9}))));
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "next": 9}))));
 }
 
 #[test]

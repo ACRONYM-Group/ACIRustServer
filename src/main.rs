@@ -71,46 +71,50 @@ fn main()
                                                                 },
                                                                 Err(e) =>
                                                                 {
-                                                                    let cmd = if let serde_json::Value::Object(data) = data
+                                                                    let msg = if let serde_json::Value::Object(mut data) = data
                                                                     {
-                                                                        if data.contains_key("cmd")
+                                                                        if !data.contains_key("cmd")
                                                                         {
-                                                                            data.get("cmd").unwrap().clone()
+                                                                            data.insert("cmd".to_string(), serde_json::json!("unknown"));
                                                                         }
-                                                                        else
-                                                                        {
-                                                                            serde_json::json!("unknown")
-                                                                        }
+
+                                                                        data.insert("mode".to_string(), serde_json::json!("error"));
+                                                                        data.insert("msg".to_string(), serde_json::json!(format!("{:?}", e)));
+
+                                                                        serde_json::Value::Object(data)
                                                                     }
                                                                     else
                                                                     {
-                                                                        serde_json::json!("unknown")
+                                                                        serde_json::json!({"cmd": "unknown", "mode": "error", "msg":  format!("{:?}", e)})
                                                                     };
 
-                                                                    let msg = serde_json::json!({"cmd": cmd, "mode": "error", "msg": format!("{}", e)});
+                                                                    log::error!("Sending error message `{}`", msg);
+
                                                                     websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
                                                                 }
                                                             }
                                                         },
                                                         Err(e) =>
                                                         {
-                                                            let cmd = if let serde_json::Value::Object(data) = data
+                                                            let msg = if let serde_json::Value::Object(mut data) = data
                                                             {
-                                                                if data.contains_key("cmd")
+                                                                if !data.contains_key("cmd")
                                                                 {
-                                                                    data.get("cmd").unwrap().clone()
+                                                                    data.insert("cmd".to_string(), serde_json::json!("unknown"));
                                                                 }
-                                                                else
-                                                                {
-                                                                    serde_json::json!("unknown")
-                                                                }
+
+                                                                data.insert("mode".to_string(), serde_json::json!("error"));
+                                                                data.insert("msg".to_string(), serde_json::json!(format!("{:?}", e)));
+
+                                                                serde_json::Value::Object(data)
                                                             }
                                                             else
                                                             {
-                                                                serde_json::json!("unknown")
+                                                                serde_json::json!({"cmd": "unknown", "mode": "error", "msg":  format!("{:?}", e)})
                                                             };
 
-                                                            let msg = serde_json::json!({"cmd": cmd, "mode": "error", "msg": format!("{:?}", e)});
+                                                            log::error!("Sending error message `{}`", msg);
+                                                            
                                                             websocket.write_message(tungstenite::Message::Text(msg.to_string())).unwrap();
                                                         }
                                                     }
@@ -125,6 +129,7 @@ fn main()
                                     Err(e) =>
                                     {
                                         log::error!("Unable to parse websocket, {}", e);
+                                        break;
                                     }
                                 }
                             }
