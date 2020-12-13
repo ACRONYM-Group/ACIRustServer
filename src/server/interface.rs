@@ -47,6 +47,39 @@ fn extract_number(val: &Value, title: &str) -> Result<usize, String>
     }
 }
 
+/// Wrap a Result<Option<Value>, String> to include an optional unique ID
+fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<&Value>) -> Result<Option<Value>, String>
+{
+    if unique_id.is_none()
+    {
+        prev
+    }
+    else if let Ok(v) = prev
+    {
+        if v.is_none()
+        {
+            Ok(v)
+        }
+        else
+        {
+            if let Value::Object(mut obj) = v.clone().unwrap()
+            {
+                obj.insert("unique_id".to_string(), unique_id.unwrap().clone());
+
+                Ok(Some(Value::Object(obj)))
+            }
+            else
+            {
+                Ok(v)
+            }
+        }
+    }
+    else
+    {
+        prev
+    }
+}
+
 /// Server Interface (to be used by individual connections)
 #[derive(Debug, Clone)]
 pub struct ServerInterface
@@ -86,6 +119,8 @@ impl ServerInterface
         self.user_profile.is_authed = true;
     }
 
+    
+
     /// Execute a command on the database
     pub fn execute_command(&mut self, command: Command) -> Result<Option<Value>, String>
     {
@@ -102,7 +137,9 @@ impl ServerInterface
             return Err(msg);
         };
 
-        match command.cmd
+        let unique_id = cmd_map.get("unique_id").clone();
+
+        add_unique_id(match command.cmd
         {
             Commands::ReadFromDisk =>
             {
@@ -318,6 +355,6 @@ impl ServerInterface
                 error!("{}", msg);
                 Err(msg)
             }
-        }
+        }, unique_id)
     }
 }

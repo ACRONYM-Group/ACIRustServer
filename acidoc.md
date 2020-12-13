@@ -7,6 +7,7 @@ ACI 2020.12 is a partial redesign of the ACI protocol focusing on cleaning up so
 1. Command Names
 2. Command Formats
 3. Response Formats
+4. Unique ID's
 
 ## 1. Command Names
 
@@ -252,3 +253,21 @@ An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields fi
 ### Note
 
 Note that the `"ack"` response is reserved for commands like `event` where the server cannot determine if the message has been recieved correctly. Any command which is directed at the server should use the `"ok"` response instead.
+
+## 4. Unique ID's
+
+In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
+
+For example, if a read database command is sent with the following data
+
+`{"cmd": "read_from_disk", "db_key": "test", "unique_id": 348817502135}`
+
+then a successful execution would result in
+
+`{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"test", "unique_id": 348817502135}`
+
+however, in addition if an error were to be thrown, the following could result
+
+`{"cmd": "read_from_disk", "mode": "error", "msg":"Error Message", "db_key":"test", "unique_id": 348817502135}`
+
+This enables unique responses to be given even when an error is triggered early in the parsing process for a packet on the server.
