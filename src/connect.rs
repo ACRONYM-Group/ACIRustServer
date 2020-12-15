@@ -1,4 +1,4 @@
-use futures_util::{SinkExt, StreamExt};
+use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 
 use super::args;
@@ -136,16 +136,16 @@ async fn handle_message(tx: std::sync::Arc<tokio::sync::mpsc::UnboundedSender<st
                 }
                 else
                 {
-                    "UNKNOWN".to_string()
+                    return;
                 }
             },
             Err(e) =>
             {
-                "UNKNOWN".to_string()
+                json!({"cmd": "UNKNOWN", "mode": "error", "msg": format!("Error from server process: {}", e)}).to_string()
             }
         };
 
-        log::info!("Sending json back {:?}", json_msg);
+        log::debug!("Sending data back {:?}", json_msg);
         tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(json_msg))).unwrap();
     }
 }
