@@ -13,11 +13,23 @@ pub struct Arguments
     #[structopt(short, long)]
     pub mismatch: bool,
 
+    /// Do not use the config file for global settings (will still load the config database for user authentication)
+    #[structopt(short, long)]
+    pub ignore_config: bool,
+
     /// Allow all database versions to be loaded (may cause instability)
     #[structopt(short, long)]
     pub allow_all: bool,
 
-    /// Input file
+    /// IP address to connect the server to (overrides the config database)
+    #[structopt(long)]
+    pub ip: Option<String>,
+
+    /// Port to connect the server to (overrides the config database)
+    #[structopt(short, long)]
+    pub port: Option<usize>,
+
+    /// Database root directory
     #[structopt(parse(from_os_str), default_value = "test-databases/")]
     pub path: std::path::PathBuf,
 

@@ -60,6 +60,63 @@ impl Server
         })
     }
 
+    /// Get the ip address of the Server from the config database
+    pub fn config_get_ip(&self) -> Result<String, String>
+    {
+        if let Ok(val) = self.config_database.read_from_key("ip", &self.config_admin)
+        {
+            if let Value::String(ip) = val
+            {
+                Ok(ip)
+            }
+            else
+            {
+                let msg = "IP address field in the config database is not a string".to_string();
+                log::error!("{}", msg);
+                Err(msg)
+            }
+        }
+        else
+        {
+            let msg = "No IP address given in the config database".to_string();
+            log::error!("{}", msg);
+            Err(msg)
+        }
+    }
+
+    /// Get the port of the Server from the config database
+    pub fn config_get_port(&self) -> Result<usize, String>
+    {
+        if let Ok(val) = self.config_database.read_from_key("port", &self.config_admin)
+        {
+            if let Value::Number(ip) = val
+            {
+                if ip.is_u64()
+                {
+                    Ok(ip.as_u64().unwrap() as usize)
+                }
+                else
+                {
+                    let msg = "Port field in the config database is not a u64".to_string();
+                    log::error!("{}", msg);
+                    Err(msg)
+                }
+            }
+            else
+            {
+                let msg = "Port field in the config database is not an integer".to_string();
+                log::error!("{}", msg);
+                Err(msg)
+            }
+        }
+        else
+        {
+            let msg = "No port given in the config database".to_string();
+            log::error!("{}", msg);
+            Err(msg)
+        }
+    }
+
     /// Read a database from disk
     pub fn read_database_from_disk(&self, name: &str) -> Result<(), String>
     {
