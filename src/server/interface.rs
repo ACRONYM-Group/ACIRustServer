@@ -215,6 +215,9 @@ impl ServerInterface
             {
                 self.is_auth("GetIndex")?;
 
+                #[allow(deprecated)]
+                std::thread::sleep_ms(1000);
+
                 let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
                 let index = extract_number(cmd_map.get("index").unwrap(), "index")?;
