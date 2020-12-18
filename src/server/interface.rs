@@ -47,12 +47,45 @@ fn extract_number(val: &Value, title: &str) -> Result<usize, String>
     }
 }
 
+/// Wrap a Result<Option<Value>, String> to include an optional unique ID
+fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<&Value>) -> Result<Option<Value>, String>
+{
+    if unique_id.is_none()
+    {
+        prev
+    }
+    else if let Ok(v) = prev
+    {
+        if v.is_none()
+        {
+            Ok(v)
+        }
+        else
+        {
+            if let Value::Object(mut obj) = v.clone().unwrap()
+            {
+                obj.insert("unique_id".to_string(), unique_id.unwrap().clone());
+
+                Ok(Some(Value::Object(obj)))
+            }
+            else
+            {
+                Ok(v)
+            }
+        }
+    }
+    else
+    {
+        prev
+    }
+}
+
 /// Server Interface (to be used by individual connections)
 #[derive(Debug, Clone)]
 pub struct ServerInterface
 {
     server: Arc<Server>,
-    user_profile: UserAuthentication
+    pub user_profile: UserAuthentication
 }
 
 impl ServerInterface
@@ -86,6 +119,8 @@ impl ServerInterface
         self.user_profile.is_authed = true;
     }
 
+    
+
     /// Execute a command on the database
     pub fn execute_command(&mut self, command: Command) -> Result<Option<Value>, String>
     {
@@ -102,28 +137,37 @@ impl ServerInterface
             return Err(msg);
         };
 
-        match command.cmd
+        let unique_id = cmd_map.get("unique_id").clone();
+
+        add_unique_id(match command.cmd
         {
             Commands::ReadFromDisk =>
             {
                 self.is_auth("ReadFromDisk")?;
 
-                self.server.read_database_from_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(None)
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                self.server.read_database_from_disk(&db_key)?;
+                Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": db_key})))
             },
             Commands::WriteToDisk =>
             {
                 self.is_auth("WriteToDisk")?;
 
-                self.server.write_database_to_disk(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(None)
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                self.server.write_database_to_disk(&db_key)?;
+                Ok(Some(json!({"cmd": "write_to_disk", "mode": "ok", "msg": "", "db_key": db_key})))
             },
             Commands::ListDatabases =>
             {
                 self.is_auth("ListDatabases")?;
 
-                let keys = self.server.get_keys(&extract_string(cmd_map.get("db_key").unwrap(), "database key")?)?;
-                Ok(Some(json!({"cmdType": "ldResp", "msg": keys})))
+                let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
+
+                let keys = self.server.get_keys(&db_key)?;
+
+                Ok(Some(json!({"cmd": "list_keys", "mode": "ok", "msg": "", "db_key": db_key, "val": keys})))
             },
             Commands::GetValue =>
             {
@@ -143,7 +187,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "getResp", "key": key, "db_key": db_key, "val": data})))
+                Ok(Some(json!({"cmd": "get_value", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "val": data})))
             },
             Commands::SetValue =>
             {
@@ -165,9 +209,7 @@ impl ServerInterface
                     }
                 };
 
-                let msg = format!("{}[{}]={}", db_key, key, data.to_string());
-
-                Ok(Some(json!({"cmdType": "setResp", "msg": msg, "key": key, "db_key": db_key, "val": data})))
+                Ok(Some(json!({"cmd": "set_value", "mode": "ok", "msg": "", "key": key, "db_key": db_key,})))
             },
             Commands::GetIndex =>
             {
@@ -188,7 +230,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+                Ok(Some(json!({"cmd": "get_index", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index, "val": data})))
             },
             Commands::SetIndex =>
             {
@@ -211,7 +253,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "set_indexResp", "key": key, "db_key": db_key, "msg": data, "index": index})))
+                Ok(Some(json!({"cmd": "set_index", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "index": index})))
             },
             Commands::AppendIndex =>
             {
@@ -233,7 +275,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "app_indexResp", "msg": data, "key": key, "db_key": db_key, "index": index})))
+                Ok(Some(json!({"cmd": "append_list", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "next": index})))
             },
             Commands::GetRecentIndex =>
             {
@@ -254,7 +296,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_recent_indexResp", "msg": data, "key": key, "db_key": db_key, "num": index})))
+                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "val": data})))
             },
             Commands::GetLengthIndex => 
             {
@@ -263,7 +305,7 @@ impl ServerInterface
                 let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
 
-                let index = match self.server.databases.get(db_key)
+                let length = match self.server.databases.get(db_key)
                 {
                     Some(v) => {v.get_length_from_key(&key, &self.user_profile)?},
                     None => 
@@ -274,7 +316,7 @@ impl ServerInterface
                     }
                 };
 
-                Ok(Some(json!({"cmdType": "get_len_indexResp", "msg": index, "key": key, "db_key": db_key})))
+                Ok(Some(json!({"cmd": "get_list_length", "mode": "ok", "msg": "", "key": key, "db_key": db_key, "length": length})))
             },
             Commands::CreateDatabase =>
             {
@@ -283,14 +325,52 @@ impl ServerInterface
                 let name = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
 
                 self.server.databases.insert(name.clone(), DatabaseInterface::new(Database::new(&name), chashmap::CHashMap::new()));
-                Ok(None)
+                Ok(Some(json!({"cmd": "create_database", "mode": "ok", "msg": "", "db_key": name})))
             },
-            default => 
+            Commands::AcronymAuth =>
             {
-                let msg = format!("Command `{:?}` not yet implemented", default);
+                let id = extract_string(cmd_map.get("id").unwrap(), "user id")?;
+                let token = extract_string(cmd_map.get("token").unwrap(), "user token")?;
+
+                let (result, msg) = self.server.check_a_auth(&id, &token)?;
+
+                if result
+                {
+                    self.user_profile.is_authed = true;
+                    self.user_profile.domain = "a_auth".to_string();
+                    self.user_profile.name = id;
+                }
+
+                Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": msg})))
+            },
+            Commands::GoogleAuth =>
+            {
+                let id = extract_string(cmd_map.get("id_token").unwrap(), "user id")?;
+
+                let name = super::authentication::google_authenticate(&id)?;
+
+                match name
+                {
+                    Some(value) => 
+                    {
+                        self.user_profile.is_authed = true;
+                        self.user_profile.domain = "g_auth".to_string();
+                        self.user_profile.name = value;
+
+                        Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": "success"})))
+                    },
+                    None =>
+                    {
+                        Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": "error"})))
+                    }
+                }
+            },
+            Commands::Event =>
+            {
+                let msg = format!("Event command should never make it to the server interface");
                 error!("{}", msg);
                 Err(msg)
             }
-        }
+        }, unique_id)
     }
 }
