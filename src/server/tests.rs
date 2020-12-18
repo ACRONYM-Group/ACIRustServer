@@ -238,13 +238,13 @@ pub fn test_get_recent()
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "read_from_disk", "db_key": "test"})).unwrap()), 
                 Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": "test"}))));
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "get_recent", "db_key": "test", "key": "list0", "num": 3})).unwrap()),
-                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!([false, 4.0, true])}))));
+                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!([true, 4.0, false])}))));
 
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "get_recent", "db_key": "test", "key": "list0", "num": 5})).unwrap()),
-                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!([false, 4.0, true, "3", "2"])}))));
+                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!(["2", "3", true, 4.0, false])}))));
 
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "get_recent", "db_key": "test", "key": "list0", "num": 10, "unique_id": -39485})).unwrap()),
-                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!([false, 4.0, true, "3", "2", 1, 0]), "unique_id": -39485}))));
+                Ok(Some(json!({"cmd": "get_recent", "mode": "ok", "msg": "", "db_key": "test", "key": "list0", "val": json!([0, 1, "2", "3", true, 4.0, false]), "unique_id": -39485}))));
 }
 
 #[test]

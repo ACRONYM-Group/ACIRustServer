@@ -157,7 +157,7 @@ The server will repond with a response packet with the `cmd` field set to `"get_
 
 ### get_recent
 
-The `get_recent` command gets the last `num` items from the list stored in the given key in the given database. If `num` is greater than the length of the list, the list will be returned. The list will be reversed however such that the last item in the list in the database is the first in the returned list. 
+The `get_recent` command gets the last `num` items from the list stored in the given key in the given database. If `num` is greater than the length of the list, the list will be returned. The list should be in the same order that appears on the server, specifically the last item added to the server should be the last item in the list returned.
 
 The command sent to the server is of the form
 

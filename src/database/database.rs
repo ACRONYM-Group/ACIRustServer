@@ -164,7 +164,6 @@ impl Database
         let l = array.len() - n.min(array.len());
 
         let s = &mut array[l..];
-        s.reverse();
 
         Ok(Value::Array(Vec::from(s)))
     }
