@@ -16,8 +16,12 @@ pub fn google_authenticate(id: &str) -> Result<Option<String>, String>
 
     // Let the crate handle everything for you
     let id_info = match client.verify(id) {Ok(v) => v, Err(_) => {return Ok(None)}};
-    println!("Success! Signed-in as {}", id_info.sub);
+    log::info!("Success! Signed-in as {}", id_info.sub);
 
 
-    Err("ISSUE".to_string())
+    match id_info.email
+    {
+        Some(v) => Ok(Some(v)),
+        None => Err("No email given".to_string())
+    }
 }
