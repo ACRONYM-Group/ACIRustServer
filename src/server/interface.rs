@@ -85,7 +85,7 @@ fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<&Value>)
 pub struct ServerInterface
 {
     server: Arc<Server>,
-    user_profile: UserAuthentication
+    pub user_profile: UserAuthentication
 }
 
 impl ServerInterface

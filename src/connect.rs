@@ -9,6 +9,10 @@ use tokio::sync::Mutex;
 
 use serde_json::json;
 
+use chashmap::CHashMap;
+
+type SendingChannel = std::sync::Arc<tokio::sync::mpsc::UnboundedSender<std::result::Result<tokio_tungstenite::tungstenite::Message, tokio_tungstenite::tungstenite::Error>>>;
+
 pub async fn run(opt: args::Arguments) -> Result<(), String>
 {
     log::info!("Starting ACI Server");
@@ -50,6 +54,8 @@ pub async fn run(opt: args::Arguments) -> Result<(), String>
         aci.config_get_port()?
     };
 
+    let connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>> = std::sync::Arc::new(CHashMap::new());
+
     let addr = format!("{}:{}", ip, port);
     log::info!("Connecting to address `{}`", addr);
 
@@ -64,13 +70,13 @@ pub async fn run(opt: args::Arguments) -> Result<(), String>
     // Reading loop
     while let Ok((stream, _)) = conn.accept().await
     {
-        tokio::spawn(handle_stream(stream, aci.clone()));
+        tokio::spawn(handle_stream(stream, aci.clone(), connections_hashmap.clone()));
     }
 
     Ok(())
 }
 
-pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server>)
+pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server>, connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>>)
 {
     let interface = std::sync::Arc::new(Mutex::new(server::ServerInterface::new(&aci)));
 
@@ -101,7 +107,7 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
             {
                 if let Ok(val) = serde_json::from_str::<serde_json::Value>(text)
                 {
-                    tokio::spawn(handle_message(tx.clone(), val, interface.clone()));
+                    tokio::spawn(handle_message(tx.clone(), val, interface.clone(), connections_hashmap.clone()));
                 }
                 else
                 {
@@ -120,10 +126,57 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
     }).await;
 }
 
-async fn handle_message(tx: std::sync::Arc<tokio::sync::mpsc::UnboundedSender<std::result::Result<tokio_tungstenite::tungstenite::Message, tokio_tungstenite::tungstenite::Error>>>, val: serde_json::Value, aci_interface: std::sync::Arc<Mutex<server::ServerInterface>>)
+async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interface: std::sync::Arc<Mutex<server::ServerInterface>>, connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>>)
 {
-    if let Ok(command) = commands::Command::from_json(val)
+    if let Ok(command) = commands::Command::from_json(val.clone())
     {
+        if command.cmd == commands::Commands::Event
+        {
+            if let serde_json::Value::Object(map) = command.data
+            {
+                if map.contains_key("destination")
+                {
+                    if let serde_json::Value::String(dest) = map.get("destination").unwrap()
+                    {
+                        if connections_hashmap.contains_key(dest)
+                        {
+                            connections_hashmap.get(dest).unwrap().send(Ok(tokio_tungstenite::tungstenite::Message::Text(
+                                val.to_string()
+                            ))).unwrap();
+
+                            tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(
+                                serde_json::json!({"cmd": "event", "mode": "ack", "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}).to_string()
+                            ))).unwrap();
+                        }
+                        else
+                        {
+                            log::warn!("Attempted to forward event to `{}`, however, this user is not connected", dest);
+                            let msg = format!("Unable to connect to user `{}`", dest);
+                            tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(
+                                serde_json::json!({"cmd": "event", "mode": "error", "msg": msg, "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}).to_string()
+                            ))).unwrap();
+                        }
+                    }
+                    else
+                    {
+                        log::error!("Event destination is not a string, ignoring packet");
+                    }
+                }
+                else
+                {
+                    log::error!("Event command does not include destination, ignoring packet");
+                }
+            }
+            else
+            {
+                log::error!("Command data is not an object, ignoring packet");
+            }
+
+            return;
+        }
+
+        let is_auth_command = command.cmd == commands::Commands::AcronymAuth || command.cmd == commands::Commands::GoogleAuth;
+
         let result = aci_interface.lock().await.execute_command(command);
 
         let json_msg = match result
@@ -147,5 +200,13 @@ async fn handle_message(tx: std::sync::Arc<tokio::sync::mpsc::UnboundedSender<st
 
         log::debug!("Sending data back {:?}", json_msg);
         tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(json_msg))).unwrap();
+
+        if is_auth_command
+        {
+            let id = aci_interface.lock().await.user_profile.name.clone();
+            connections_hashmap.insert(id.clone(), tx.clone());
+
+            log::debug!("Adding Connection to user `{}` to connections map", id);
+        }
     }
 }

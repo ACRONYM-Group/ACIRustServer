@@ -4,7 +4,6 @@ pub mod commands;
 pub mod connect;
 pub mod database;
 pub mod server;
-pub mod wrapper;
 
 mod version;
 pub use version::*;
