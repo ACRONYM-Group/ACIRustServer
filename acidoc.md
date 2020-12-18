@@ -209,7 +209,7 @@ The `id_token` parameter must be a string and be the id token of the user authen
 
 The server will repond with a response packet with the `cmd` field set to `"g_auth"`, no other information is required as only one authentication is required per connection. The response to a proper execution would be
 
-`{"cmd": "g_auth", "mode": "ok", msg: ""`
+`{"cmd": "g_auth", "mode": "ok", msg: ""}`
 
 ### event
 
