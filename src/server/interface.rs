@@ -343,15 +343,31 @@ impl ServerInterface
 
                 Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": msg})))
             },
+            Commands::GoogleAuth =>
+            {
+                let id = extract_string(cmd_map.get("id_token").unwrap(), "user id")?;
+
+                let name = super::authentication::google_authenticate(&id)?;
+
+                match name
+                {
+                    Some(value) => 
+                    {
+                        self.user_profile.is_authed = true;
+                        self.user_profile.domain = "g_auth".to_string();
+                        self.user_profile.name = value;
+
+                        Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": "success"})))
+                    },
+                    None =>
+                    {
+                        Ok(Some(json!({"cmd": "a_auth", "mode": "ok", "msg": "error"})))
+                    }
+                }
+            },
             Commands::Event =>
             {
                 let msg = format!("Event command should never make it to the server interface");
-                error!("{}", msg);
-                Err(msg)
-            }
-            default => 
-            {
-                let msg = format!("Command `{:?}` not yet implemented", default);
                 error!("{}", msg);
                 Err(msg)
             }
