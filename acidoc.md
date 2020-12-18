@@ -6,6 +6,7 @@ Version 2020.12a
 2. Command Formats
 3. Response Formats
 4. Unique ID's
+5. Database Files
 
 ## 1. Command Names
 
@@ -267,3 +268,43 @@ however, in addition if an error were to be thrown, the following could result
 `{"cmd": "read_from_disk", "mode": "error", "msg":"Error Message", "db_key":"test", "unique_id": 348817502135}`
 
 This enables unique responses to be given even when an error is triggered early in the parsing process for a packet on the server.
+
+## 5. Database Files
+
+Databases are stored on disk starting at a root directory. Within this root directory are individual directories for each database. Within these directories is a `.database` file of the same name as the directory it is stored within and `.item` files for each item stored within that database. 
+
+### `.database`
+
+The contents of a `.database` file would resemble the following:
+
+`{"dbKey":"test", "keys":["list0", "list2", "list1"], "ver":"2020.12.18.1"}`
+
+The `dbKey` field contains the name of the database, this should match the name of the file and the directory containing the file and must be a string.
+
+The `keys` field contains a list of all of the keys accessible by the database. Each of the keys must be a string.
+
+The `ver` field contains the version of ACI which last wrote the database. This is used to determine if the database format is compatible with the current version of ACI.
+
+### `.item`
+
+The contents of a `.item` file would resemble the following:
+
+`{"key": "list2","permissions": {"read":[["a_user","any"],["g_user","any"]], "write":[["a_user","any"],["g_user","any"]]}, "type":"table", "value":[0,1,false]}`
+
+The `key` field contains the name of the item, this must match the name of the `.item` file and must be a string.
+
+The `permissions` field contains the permissions object for the item.
+
+The `type` field contains the type of data stored within the item, the only values which are used currently are `"table"` for objects, `"list"` for lists, and `"string"` for all other datatypes.
+
+### Permissions
+
+The permissions struct would resemble the following:
+
+`{"read":[["a_user","any"],["g_user","any"]], "write":[["a_user","any"],["g_user","any"]]}`
+
+The `read` field contains a list of tuples which each contain two values, the user domain (either `"a_auth"` or `"g_auth"` depending upon which command the user used to connect) and the user name (or generic permission).
+
+The `write` field contains a similar list for the write permissions.
+
+The special generic permission `"any"` allows anybody, even if they have not authenticated to interact with the item. The special generic permission `"authed"` allows anybody who is authenticated to interact with the item.
