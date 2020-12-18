@@ -1,8 +1,6 @@
-# ACI 2020.12 Proposal
+# ACI Documentation
 
-ACI 2020.12 is a partial redesign of the ACI protocol focusing on cleaning up some of the protocol, and increasing internal consistency. Very little of the user facing side of ACI is changed in this proposal, instead a lot of focus is put on increasing consistency between the commands and responses.
-
-## Areas of Focus
+Version 2020.12a
 
 1. Command Names
 2. Command Formats
@@ -11,9 +9,7 @@ ACI 2020.12 is a partial redesign of the ACI protocol focusing on cleaning up so
 
 ## 1. Command Names
 
-The proposed change does not change any of the functionality with the commands, but replaces some of the command names to make them more consistent.
-
-The revised names are as follows:
+All command names which are required to be implemented:
 
 * write_to_disk
 * read_from_disk
