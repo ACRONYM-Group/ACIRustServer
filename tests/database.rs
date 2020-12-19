@@ -110,11 +110,11 @@ pub fn integration_test_database_last_n_list()
 
     assert_eq!(db.read_last_n_from_key("list", 0, &user), Ok(serde_json::json!([])));
     assert_eq!(db.read_last_n_from_key("list", 1, &user), Ok(serde_json::json!(["6"])));
-    assert_eq!(db.read_last_n_from_key("list", 2, &user), Ok(serde_json::json!(["6", 5])));
-    assert_eq!(db.read_last_n_from_key("list", 3, &user), Ok(serde_json::json!(["6", 5, 4])));
-    assert_eq!(db.read_last_n_from_key("list", 4, &user), Ok(serde_json::json!(["6", 5, 4, "3"])));
-    assert_eq!(db.read_last_n_from_key("list", 5, &user), Ok(serde_json::json!(["6", 5, 4, "3", "2"])));
-    assert_eq!(db.read_last_n_from_key("list", 6, &user), Ok(serde_json::json!(["6", 5, 4, "3", "2", 1])));
-    assert_eq!(db.read_last_n_from_key("list", 7, &user), Ok(serde_json::json!(["6", 5, 4, "3", "2", 1, 0])));
-    assert_eq!(db.read_last_n_from_key("list", 8, &user), Ok(serde_json::json!(["6", 5, 4, "3", "2", 1, 0])));
+    assert_eq!(db.read_last_n_from_key("list", 2, &user), Ok(serde_json::json!([5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 3, &user), Ok(serde_json::json!([4, 5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 4, &user), Ok(serde_json::json!(["3", 4, 5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 5, &user), Ok(serde_json::json!(["2", "3", 4, 5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 6, &user), Ok(serde_json::json!([1, "2", "3", 4, 5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 7, &user), Ok(serde_json::json!([0, 1, "2", "3", 4, 5, "6"])));
+    assert_eq!(db.read_last_n_from_key("list", 8, &user), Ok(serde_json::json!([0, 1, "2", "3", 4, 5, "6"])));
 }

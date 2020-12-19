@@ -193,14 +193,14 @@ pub fn test_database_get_last_n()
     db.write("key", json!([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).unwrap();
     db.write("key2", json!([0, 1, 2])).unwrap();
 
-    assert_eq!(db.get_last_n("key", 4), Ok(json!([10, 9, 8, 7])));
-    assert_eq!(db.get_last_n("key2", 4), Ok(json!([2, 1, 0])));
+    assert_eq!(db.get_last_n("key", 4), Ok(json!([7, 8, 9, 10])));
+    assert_eq!(db.get_last_n("key2", 4), Ok(json!([0, 1, 2])));
 
-    assert_eq!(db.get_last_n("key", 8), Ok(json!([10, 9, 8, 7, 6, 5, 4, 3])));
-    assert_eq!(db.get_last_n("key2", 8), Ok(json!([2, 1, 0])));
+    assert_eq!(db.get_last_n("key", 8), Ok(json!([3, 4, 5, 6, 7, 8, 9, 10])));
+    assert_eq!(db.get_last_n("key2", 8), Ok(json!([0, 1, 2])));
 
-    assert_eq!(db.get_last_n("key", 15), Ok(json!([10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0])));
-    assert_eq!(db.get_last_n("key2", 15), Ok(json!([2, 1, 0])));
+    assert_eq!(db.get_last_n("key", 15), Ok(json!([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])));
+    assert_eq!(db.get_last_n("key2", 15), Ok(json!([0, 1, 2])));
 }
 
 #[test]
