@@ -101,27 +101,45 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
 
     rx.for_each(|msg| async
     {
-        if let Ok(msg) = msg
+        match msg
         {
-            if let Ok(text) = msg.to_text()
+            Ok(msg) =>
             {
-                if let Ok(val) = serde_json::from_str::<serde_json::Value>(text)
+
+                if let Ok(text) = msg.to_text()
                 {
-                    tokio::spawn(handle_message(tx.clone(), val, interface.clone(), connections_hashmap.clone()));
+                    if text.len() > 0
+                    {
+                        if let Ok(val) = serde_json::from_str::<serde_json::Value>(text)
+                        {
+                            tokio::spawn(handle_message(tx.clone(), val, interface.clone(), connections_hashmap.clone()));
+                        }
+                        else
+                        {
+                            log::error!("Unable to parse json from message from `{}`", addr);
+                        }
+                    }
                 }
                 else
                 {
-                    log::error!("Unable to parse json from message from `{}`", addr);
+                    log::error!("Unable to extract text from message from `{}`", addr);
+                }
+            },
+            Err(e) =>
+            {
+                match e
+                {
+                    tokio_tungstenite::tungstenite::Error::ConnectionClosed =>
+                    {
+                        log::info!("Connection with `{}` closed", addr);
+                        return;
+                    },
+                    _ =>
+                    {
+                        log::error!("Unable to extract message from `{}` {}", addr, e);
+                    }
                 }
             }
-            else
-            {
-                log::error!("Unable to extract text from message from `{}`", addr);
-            }
-        }
-        else
-        {
-            log::error!("Unable to extract message from `{}`", addr);
         }
     }).await;
 }
