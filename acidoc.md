@@ -16,6 +16,7 @@ All command names which are required to be implemented:
 * write_to_disk
 * read_from_disk
 * list_keys
+* list_databases
 * get_value
 * set_value
 * get_index
@@ -87,6 +88,20 @@ The `db_key` parameter must be a string and the name of a loaded database.
 The server will repond with a response packet with the `cmd` field set to `"list_keys"` with the `db_key` field, and a `val` field filled with a list of keys. The response to a proper execution would be
 
 `{"cmd": "list_keys", "mode": "ok", "msg":"", "db_key":"DBKEY", "val": ["key0", "key1", ...]}`
+
+### list_databases
+
+The `list_databases` command lists all of the databases connected to the server.
+
+The command sent to the server is of the form
+
+`{"cmd": "list_databases"}`
+
+There are no parameters sent to the `list_databases` command.
+
+The server will respond with a response packet with the `cmd` field set to `"list_databases"`, and a `val` field filled with the list of database keys. The response to a proper execution would be
+
+`{"cmd": "list_databases, "val": ["dbkey0", "dbkey1", ...]}`
 
 ### get_value
 

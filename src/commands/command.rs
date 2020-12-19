@@ -10,6 +10,7 @@ pub enum Commands
 {
     WriteToDisk,
     ReadFromDisk,
+    ListKeys,
     ListDatabases,
     GetValue,
     SetValue,
@@ -79,7 +80,8 @@ impl Command
                         {
                             "write_to_disk" => Commands::WriteToDisk,
                             "read_from_disk" => Commands::ReadFromDisk,
-                            "list_keys" => Commands::ListDatabases,
+                            "list_keys" => Commands::ListKeys,
+                            "list_databases" => Commands::ListDatabases,
                             "get_value" => Commands::GetValue,
                             "set_value" => Commands::SetValue,
                             "get_index" => Commands::GetIndex,

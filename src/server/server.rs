@@ -153,6 +153,20 @@ impl Server
         Ok(self.databases.get(name).unwrap().database.get_all_keys()?)
     }
 
+    /// Get the array of db_keys in the server
+    pub fn get_dbkeys(&self) -> Result<Vec<String>, String>
+    {
+        let mut keys = vec![];
+        for (k, _) in (*self.databases).clone().into_iter()
+        {
+            keys.push(k.clone());
+        }
+
+        keys.sort();
+
+        Ok(keys)
+    }
+
     /// Check acronym authentication
     pub fn check_a_auth(&self, id: &str, token: &str) -> Result<(bool, String), String>
     {

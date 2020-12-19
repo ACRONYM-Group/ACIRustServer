@@ -159,15 +159,23 @@ impl ServerInterface
                 self.server.write_database_to_disk(&db_key)?;
                 Ok(Some(json!({"cmd": "write_to_disk", "mode": "ok", "msg": "", "db_key": db_key})))
             },
-            Commands::ListDatabases =>
+            Commands::ListKeys =>
             {
-                self.is_auth("ListDatabases")?;
+                self.is_auth("ListKeys")?;
 
                 let db_key = extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
 
                 let keys = self.server.get_keys(&db_key)?;
 
                 Ok(Some(json!({"cmd": "list_keys", "mode": "ok", "msg": "", "db_key": db_key, "val": keys})))
+            },
+            Commands::ListDatabases =>
+            {
+                self.is_auth("ListDatabases")?;
+
+                let keys = self.server.get_dbkeys()?;
+
+                Ok(Some(json!({"cmd": "list_databases", "mode": "ok", "msg": "", "val": keys})))
             },
             Commands::GetValue =>
             {

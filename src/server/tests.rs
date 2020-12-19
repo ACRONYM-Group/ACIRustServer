@@ -32,7 +32,7 @@ pub fn test_read_write_disk()
 }
 
 #[test]
-pub fn test_list_databases()
+pub fn test_list_keys()
 {
     let mut opt = args::Arguments::from_args();
     opt.path = std::path::PathBuf::from("test-databases");
@@ -49,6 +49,32 @@ pub fn test_list_databases()
     
     assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "list_keys", "db_key": "command", "unique_id": 83})).unwrap()),
                 Ok(Some(json!({"cmd": "list_keys", "mode": "ok", "msg": "", "db_key": "command", "val": ["load_cell_known_mass", "test_begin", "test_end"], "unique_id": 83}))));
+}
+
+#[test]
+pub fn test_list_databases()
+{
+    let mut opt = args::Arguments::from_args();
+    opt.path = std::path::PathBuf::from("test-databases");
+
+    let server = server::Server::new(&opt).unwrap();
+    let mut conn = server::ServerInterface::new(&std::sync::Arc::new(server));
+    conn.fake_auth();
+
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "list_databases"})).unwrap()),
+                Ok(Some(json!({"cmd": "list_databases", "mode": "ok", "msg": "", "val": []}))));
+
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "read_from_disk", "db_key": "command"})).unwrap()),
+                Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": "command"}))));
+
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "list_databases"})).unwrap()),
+                Ok(Some(json!({"cmd": "list_databases", "mode": "ok", "msg": "", "val": ["command"]}))));
+
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "read_from_disk", "db_key": "test"})).unwrap()),
+                Ok(Some(json!({"cmd": "read_from_disk", "mode": "ok", "msg": "", "db_key": "test"}))));
+    
+    assert_eq!(conn.execute_command(commands::Command::from_json(json!({"cmd": "list_databases"})).unwrap()),
+                Ok(Some(json!({"cmd": "list_databases", "mode": "ok", "msg": "", "val": ["command", "test"]}))));
 }
 
 #[test]

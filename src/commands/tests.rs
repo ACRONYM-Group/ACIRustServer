@@ -8,6 +8,7 @@ fn test_command_parsing(test_output: bool)
         "{\"cmd\": \"write_to_disk\", \"db_key\": \"DB_KEY\"}",
         "{\"cmd\": \"read_from_disk\", \"db_key\": \"DB_KEY\"}",
         "{\"cmd\": \"list_keys\", \"db_key\": \"DB_KEY\"}",
+        "{\"cmd\": \"list_databases\"}",
         "{\"cmd\": \"get_value\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\"}",
         "{\"cmd\": \"set_value\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"val\":\"DATA\"}",
         "{\"cmd\": \"get_index\",\"key\":\"KEY\", \"db_key\": \"DB_KEY\", \"index\":42}",
@@ -20,7 +21,7 @@ fn test_command_parsing(test_output: bool)
         "{\"cmd\": \"g_auth\", \"id_token\": \"ID_TOKEN\"}",
         "{\"cmd\": \"event\", \"event_id\":\"ID\", \"destination\":\"DEST\", \"origin\": \"ORIGIN\", \"data\": \"DATA\"}"];
 
-    let cmd_types = vec![Commands::WriteToDisk, Commands::ReadFromDisk, Commands::ListDatabases,
+    let cmd_types = vec![Commands::WriteToDisk, Commands::ReadFromDisk, Commands::ListKeys, Commands::ListDatabases,
                                     Commands::GetValue, Commands::SetValue, Commands::GetIndex,
                                     Commands::SetIndex, Commands::AppendIndex, Commands::GetLengthIndex,
                                     Commands::GetRecentIndex, Commands::CreateDatabase, Commands::AcronymAuth,
