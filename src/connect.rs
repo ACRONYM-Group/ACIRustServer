@@ -128,6 +128,41 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
 
 async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interface: std::sync::Arc<Mutex<server::ServerInterface>>, connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>>)
 {
+    match val
+    {
+        serde_json::Value::Object(obj) => 
+        {
+            let json = handle_individual(tx.clone(), serde_json::Value::Object(obj), aci_interface, connections_hashmap).await;
+
+            if json.is_ok()
+            {
+                tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(json.unwrap().to_string()))).unwrap();
+            }
+        },
+        serde_json::Value::Array(values) => 
+        {
+            let mut result = vec![];
+            for value in values
+            {
+                let json = handle_individual(tx.clone(), value, aci_interface.clone(), connections_hashmap.clone()).await;
+
+                if json.is_ok()
+                {
+                    result.push(json);
+                }
+            }
+
+            tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(serde_json::json!(result).to_string()))).unwrap();
+        },
+        default =>
+        {
+            log::error!("Unable to handle a value which is not an object or array, got {:?}", default);
+        }
+    }
+}
+
+async fn handle_individual(tx: SendingChannel, val: serde_json::Value, aci_interface: std::sync::Arc<Mutex<server::ServerInterface>>, connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>>) -> Result<serde_json::Value, ()>
+{
     if let Ok(command) = commands::Command::from_json(val.clone())
     {
         if command.cmd == commands::Commands::Event
@@ -144,17 +179,14 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
                                 val.to_string()
                             ))).unwrap();
 
-                            tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(
-                                serde_json::json!({"cmd": "event", "mode": "ack", "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}).to_string()
-                            ))).unwrap();
+                            return Ok(serde_json::json!({"cmd": "event", "mode": "ack", "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}));
                         }
                         else
                         {
                             log::warn!("Attempted to forward event to `{}`, however, this user is not connected", dest);
                             let msg = format!("Unable to connect to user `{}`", dest);
-                            tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(
-                                serde_json::json!({"cmd": "event", "mode": "error", "msg": msg, "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}).to_string()
-                            ))).unwrap();
+                            
+                            return Ok(serde_json::json!({"cmd": "event", "mode": "error", "msg": msg, "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()}));
                         }
                     }
                     else
@@ -172,7 +204,7 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
                 log::error!("Command data is not an object, ignoring packet");
             }
 
-            return;
+            return Err(());
         }
 
         let is_auth_command = command.cmd == commands::Commands::AcronymAuth || command.cmd == commands::Commands::GoogleAuth;
@@ -185,22 +217,21 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
             {
                 if let Some(val) = val
                 {
-                    val.to_string()
+                    val
                 }
                 else
                 {
-                    return;
+                    return Err(());
                 }
             },
             Err(e) =>
             {
-                json!({"cmd": "UNKNOWN", "mode": "error", "msg": format!("Error from server process: {}", e)}).to_string()
+                json!({"cmd": "UNKNOWN", "mode": "error", "msg": format!("Error from server process: {}", e)})
             }
         };
 
         log::debug!("Sending data back {:?}", json_msg);
-        tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(json_msg))).unwrap();
-
+        
         if is_auth_command
         {
             let id = aci_interface.lock().await.user_profile.name.clone();
@@ -208,5 +239,9 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
 
             log::debug!("Adding Connection to user `{}` to connections map", id);
         }
+
+        return Ok(json_msg);
     }
+
+    Err(())
 }

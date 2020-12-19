@@ -3,10 +3,11 @@
 Version 2020.12a
 
 1. Command Names
-2. Command Formats
-3. Response Formats
-4. Unique ID's
-5. Database Files
+2. Packed Commands
+3. Command Formats
+4. Response Formats
+5. Unique ID's
+6. Database Files
 
 ## 1. Command Names
 
@@ -27,7 +28,23 @@ All command names which are required to be implemented:
 * g_auth
 * event
 
-## 2. Command Formats
+## 2. Packed Commands
+
+Packed commands are a specific form of a command which is sent to the server as a json array. This array should contain valid commands. The server will then execute all of the messages recieved in turn and respond with the responses packaged into an array in the same order as the input array.
+
+For example if the server recieved the following
+
+`[{"cmd": "read_from_disk", "db_key": "DBKEY"}, {"cmd": "set_value", "key": "ITEMKEY", "db_key": "DBKEY", "val": Value}, {"cmd": "write_to_disk", "db_key": "DBKEY"}]`
+
+then it should first execute the `read_from_disk` command, then the `set_value` command, and finally the `write_to_disk` command.
+
+If all of the commands executed properly, the result would be the following
+
+`[{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}, {"cmd": "set_value", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY"}, {"cmd": "write_to_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}]`
+
+If one of the packed commands were to fail and return an error, all of the other commands must still be executed. This makes using packed commands somewhat risky as if an earlier command in the sequence failed, it could cause unintended behavior while executing the other commands. If one of the commands does not return a value or errors out, it will not be included in the response packet.
+
+## 3. Command Formats
 
 ### write_to_disk
 
@@ -225,7 +242,7 @@ The server will respond with an `"ack"` packet with the `event_id` and `origin` 
 
 `{"cmd": "event", "mode": "ack", "event_id": "EVENTID", "origin": "ORIGIN"}`
 
-## 3. Response formats
+## 4. Response formats
 
 All response packets are of the form
 
@@ -251,7 +268,7 @@ An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields fi
 
 Note that the `"ack"` response is reserved for commands like `event` where the server cannot determine if the message has been recieved correctly. Any command which is directed at the server should use the `"ok"` response instead.
 
-## 4. Unique ID's
+## 5. Unique ID's
 
 In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
 
@@ -269,7 +286,7 @@ however, in addition if an error were to be thrown, the following could result
 
 This enables unique responses to be given even when an error is triggered early in the parsing process for a packet on the server.
 
-## 5. Database Files
+## 6. Database Files
 
 Databases are stored on disk starting at a root directory. Within this root directory are individual directories for each database. Within these directories is a `.database` file of the same name as the directory it is stored within and `.item` files for each item stored within that database. 
 
