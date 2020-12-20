@@ -91,11 +91,11 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
         return;
     };
 
-    let (tx, rx) = ws_stream.split();
+    let (wstx, rx) = ws_stream.split();
 
     let (stx, srx) = tokio::sync::mpsc::unbounded_channel();
 
-    tokio::spawn(srx.forward(tx));
+    tokio::spawn(srx.forward(wstx));
 
     let tx = std::sync::Arc::new(stx);
 
@@ -105,7 +105,6 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
         {
             Ok(msg) =>
             {
-
                 match msg
                 {
                     tokio_tungstenite::tungstenite::Message::Text(text) =>
@@ -150,6 +149,13 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
             }
         }
     }).await;
+
+    let id = interface.lock().await.user_profile.name.clone();
+
+    if connections_hashmap.contains_key(&id)
+    {
+        connections_hashmap.remove(&id);
+    }
 }
 
 async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interface: std::sync::Arc<Mutex<server::ServerInterface>>, connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>>)
