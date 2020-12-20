@@ -106,30 +106,38 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
             Ok(msg) =>
             {
 
-                if let Ok(text) = msg.to_text()
+                match msg
                 {
-                    if text.len() > 0
+                    tokio_tungstenite::tungstenite::Message::Text(text) =>
                     {
-                        if let Ok(val) = serde_json::from_str::<serde_json::Value>(text)
+                        if text.len() > 0
                         {
-                            tokio::spawn(handle_message(tx.clone(), val, interface.clone(), connections_hashmap.clone()));
+                            if let Ok(val) = serde_json::from_str::<serde_json::Value>(&text)
+                            {
+                                tokio::spawn(handle_message(tx.clone(), val, interface.clone(), connections_hashmap.clone()));
+                            }
+                            else
+                            {
+                                log::error!("Unable to parse json from message from `{}`", addr);
+                            }
                         }
-                        else
-                        {
-                            log::error!("Unable to parse json from message from `{}`", addr);
-                        }
+                    },
+                    tokio_tungstenite::tungstenite::Message::Close(_) =>
+                    {
+                        log::info!("Connection with `{}` closed", addr);
+                        return;
+                    },
+                    _ =>
+                    {
+                        log::error!("Unable to extract text from message from `{}`", addr);
                     }
-                }
-                else
-                {
-                    log::error!("Unable to extract text from message from `{}`", addr);
                 }
             },
             Err(e) =>
             {
                 match e
                 {
-                    tokio_tungstenite::tungstenite::Error::ConnectionClosed =>
+                    tokio_tungstenite::tungstenite::Error::ConnectionClosed | tokio_tungstenite::tungstenite::Error::Io(_) =>
                     {
                         log::info!("Connection with `{}` closed", addr);
                         return;
