@@ -3,7 +3,7 @@
 Version 2020.12a
 
 1. Command Names
-2. Packed Commands
+2. Command Settings
 3. Command Formats
 4. Response Formats
 5. Unique ID's
@@ -29,7 +29,9 @@ All command names which are required to be implemented:
 * g_auth
 * event
 
-## 2. Packed Commands
+## 2. Command Settings
+
+### 2.1. Packed Commands
 
 Packed commands are a specific form of a command which is sent to the server as a json array. This array should contain valid commands. The server will then execute all of the messages recieved in turn and respond with the responses packaged into an array in the same order as the input array.
 
@@ -44,6 +46,12 @@ If all of the commands executed properly, the result would be the following
 `[{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}, {"cmd": "set_value", "mode": "ok", "msg":"", "db_key":"DBKEY", "key": "ITEMKEY"}, {"cmd": "write_to_disk", "mode": "ok", "msg":"", "db_key":"DBKEY"}]`
 
 If one of the packed commands were to fail and return an error, all of the other commands must still be executed. This makes using packed commands somewhat risky as if an earlier command in the sequence failed, it could cause unintended behavior while executing the other commands. If one of the commands does not return a value or errors out, it will not be included in the response packet.
+
+### 2.2 `no_ack` Commands
+
+The client can force the server to not send a response to any request by adding the `no_ack` field to the command, filling it with `true`. If the field is included but not set to `true`, the server will still send a response. 
+
+The `no_ack` request will supress all responses from the server. Therefore, if a `no_ack` is requested on a `get_value` command, the command will not return a value, rendering the call useless. In addition, if the command errors out, no response will be returned.
 
 ## 3. Command Formats
 
