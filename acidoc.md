@@ -61,7 +61,7 @@ The `no_ack` request will supress all responses from the server. Therefore, if a
 
 ### 2.3 Unique ID's
 
-In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
+In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every command. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
 
 For example, if a read database command is sent with the following data
 
@@ -101,7 +101,7 @@ The command sent to the server is of the form
 
 `{"cmd": "read_from_disk", "db_key": "DBKEY"}`
 
-The `db_key` parameter must be a string and the name of a loaded database.
+The `db_key` parameter must be a string and the name of a database on disk.
 
 The server will repond with a response packet with the `cmd` field set to `"read_from_disk"` with  the `db_key` field. The response to a proper execution would be
 
