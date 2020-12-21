@@ -4,6 +4,8 @@ use log::{trace, error, debug};
 
 use std::sync::Arc;
 
+use std::ops::DerefMut;
+
 /// Database object per ACI documentation
 #[derive(Debug, Clone)]
 pub struct Database
@@ -64,14 +66,14 @@ impl Database
         }
     }
 
-    /// Get an entry from the database which must be an array
-    fn read_key_array(&self, key: &str) -> Result<Vec<Value>, String>
+    /// Verify an entry is an array
+    fn verify_key_array(&self, key: &str) -> Result<(), String>
     {
         if self.data.contains_key(key)
         {
-            match self.data.get(key).unwrap().clone()
+            match &*self.data.get(key).unwrap()
             {
-                Value::Array(array) => Ok(array),
+                Value::Array(_) => Ok(()),
                 default => 
                 {
                     let msg = format!("The value for key `{}` is not an array ({:?})", key, default);
@@ -93,17 +95,26 @@ impl Database
     {
         trace!("Reading data from index `{}` in key `{}` in database {}", index, key, self.name);
 
-        let array = self.read_key_array(key)?;
+        self.verify_key_array(key)?;
 
-        match array.get(index)
+        if let Value::Array(array) = &*self.data.get(key).unwrap()
         {
-            Some(val) => Ok(val.clone()),
-            None =>
+            match array.get(index)
             {
-                let msg = format!("The array for `{}` does not contain index {}", key, index);
-                error!("{}", msg);
-                Err(msg)
+                Some(val) => Ok(val.clone()),
+                None =>
+                {
+                    let msg = format!("The array for `{}` does not contain index {}", key, index);
+                    error!("{}", msg);
+                    Err(msg)
+                }
             }
+        }
+        else
+        {
+            let msg = format!("The value for key `{}` is not an array", key);
+            error!("{}", msg);
+            Err(msg)
         }
     }
 
@@ -112,22 +123,29 @@ impl Database
     {
         trace!("Writing {} to index `{}` in key `{}` in database {}", data, index, key, self.name);
 
-        let mut array = self.read_key_array(key)?;
+        self.verify_key_array(key)?;
 
-        if index >= array.len()
+        if let Value::Array(array) = self.data.get_mut(key).unwrap().deref_mut()
         {
-            debug!("Needing to add data to `{}` in database `{}`", key, self.name);
-        }
+            if index >= array.len()
+            {
+                debug!("Needing to add data to `{}` in database `{}`", key, self.name);
+            }
 
-        while index >= array.len()
+            while index >= array.len()
+            {
+                array.push(Value::Null);
+            }
+
+            array[index] = data;
+            Ok(())
+        }
+        else
         {
-            array.push(Value::Null);
+            let msg = format!("The value for key `{}` is not an array", key);
+            error!("{}", msg);
+            Err(msg)
         }
-
-        array[index] = data;
-
-        self.write(key, Value::Array(array))?;
-        Ok(())
     }
 
     /// Append to an array stored in the hashmap
@@ -135,14 +153,21 @@ impl Database
     {
         trace!("Appending {} to `{}` in database {}", data, key, self.name);
 
-        let mut array = self.read_key_array(key)?;
+        self.verify_key_array(key)?;
 
-        let l = array.len();
+        if let Value::Array(array) = self.data.get_mut(key).unwrap().deref_mut()
+        {
+            let l = array.len();
+            array.push(data);
 
-        array.push(data);
-
-        self.write(key, Value::Array(array))?;
-        Ok(l)
+            Ok(l)
+        }
+        else
+        {
+            let msg = format!("The value for key `{}` is not an array", key);
+            error!("{}", msg);
+            Err(msg)
+        }
     }
 
     /// Gets the length of an array stored in the hashmap
@@ -150,22 +175,42 @@ impl Database
     {
         trace!("Getting length of `{}` in database {}", key, self.name);
 
-        Ok(self.read_key_array(key)?.len())
+        self.verify_key_array(key)?;
+
+        if let Value::Array(array) = &*self.data.get(key).unwrap()
+        {
+            Ok(array.len())
+        }
+        else
+        {
+            let msg = format!("The value for key `{}` is not an array", key);
+            error!("{}", msg);
+            Err(msg)
+        }
     }
 
     /// Gets the last `n` items from an array stored in the hashmap, or if the length of the array is less than `n` items,
-    /// return the entire array, reversed such that the order is always the highest index on the server is given the lowest
-    /// index in the returned array
+    /// return the entire array
     pub fn get_last_n(&self, key: &str, n: usize) -> Result<Value, String>
     {
         trace!("Getting last {} items in `{}` in database {}", n, key, self.name);
 
-        let mut array = self.read_key_array(key)?;
-        let l = array.len() - n.min(array.len());
+        self.verify_key_array(key)?;
 
-        let s = &mut array[l..];
+        if let Value::Array(array) = &*self.data.get(key).unwrap()
+        {
+            let l = array.len() - n.min(array.len());
 
-        Ok(Value::Array(Vec::from(s)))
+            let s = &array[l..];
+
+            Ok(Value::Array(Vec::from(s)))
+        }
+        else
+        {
+            let msg = format!("The value for key `{}` is not an array", key);
+            error!("{}", msg);
+            Err(msg)
+        }
     }
 
     /// Gets the name of the database
