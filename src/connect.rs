@@ -91,7 +91,7 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
         return;
     };
 
-    let (wstx, rx) = ws_stream.split();
+    let (wstx, mut rx) = ws_stream.split();
 
     let (stx, srx) = tokio::sync::mpsc::unbounded_channel();
 
@@ -99,7 +99,7 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
 
     let tx = std::sync::Arc::new(stx);
 
-    rx.for_each(|msg| async
+    while let Some(msg) = rx.next().await
     {
         match msg
         {
@@ -124,7 +124,7 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
                     tokio_tungstenite::tungstenite::Message::Close(_) =>
                     {
                         log::info!("Connection with `{}` closed", addr);
-                        return;
+                        break;
                     },
                     _ =>
                     {
@@ -139,7 +139,7 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
                     tokio_tungstenite::tungstenite::Error::ConnectionClosed | tokio_tungstenite::tungstenite::Error::Io(_) =>
                     {
                         log::info!("Connection with `{}` closed", addr);
-                        return;
+                        break;
                     },
                     _ =>
                     {
@@ -148,9 +148,11 @@ pub async fn handle_stream(stream: TcpStream, aci: std::sync::Arc<server::Server
                 }
             }
         }
-    }).await;
+    }
 
     let id = interface.lock().await.user_profile.name.clone();
+
+    log::info!("Removing user `{}`", id);
 
     if connections_hashmap.contains_key(&id)
     {
