@@ -2,12 +2,17 @@
 
 Version 2020.12a
 
-1. Command Names
-2. Command Settings
-3. Command Formats
-4. Response Formats
-5. Unique ID's
-6. Database Files
+1. Command Names  
+2. Command Settings  
+    2.1 Packed Commands  
+    2.2 `no_ack` Commands  
+    2.3 Unique ID's  
+3. Command Formats  
+4. Response Formats  
+5. Database Files  
+    5.1 `.database`  
+    5.2 `.item`  
+    5.3 Permissions
 
 ## 1. Command Names
 
@@ -52,6 +57,25 @@ If one of the packed commands were to fail and return an error, all of the other
 The client can force the server to not send a response to any request by adding the `no_ack` field to the command, filling it with `true`. If the field is included but not set to `true`, the server will still send a response. 
 
 The `no_ack` request will supress all responses from the server. Therefore, if a `no_ack` is requested on a `get_value` command, the command will not return a value, rendering the call useless. In addition, if the command errors out, no response will be returned.
+
+
+### 2.3 Unique ID's
+
+In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
+
+For example, if a read database command is sent with the following data
+
+`{"cmd": "read_from_disk", "db_key": "test", "unique_id": 348817502135}`
+
+then a successful execution would result in
+
+`{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"test", "unique_id": 348817502135}`
+
+however, in addition if an error were to be thrown, the following could result
+
+`{"cmd": "read_from_disk", "mode": "error", "msg":"Error Message", "db_key":"test", "unique_id": 348817502135}`
+
+This enables unique responses to be given even when an error is triggered early in the parsing process for a packet on the server.
 
 ## 3. Command Formats
 
@@ -291,29 +315,11 @@ An `"error"` response is expected to have the `cmd`, `mode`, and `msg` fields fi
 
 Note that the `"ack"` response is reserved for commands like `event` where the server cannot determine if the message has been recieved correctly. Any command which is directed at the server should use the `"ok"` response instead.
 
-## 5. Unique ID's
-
-In an effort to make clients be able to handle large volumes of requests and responses another field can optionally be added to every. This is the `unique_id` field. If this field is sent with a request then every response to that request must include the `unique_id` field filled with the same value (no matter what type).
-
-For example, if a read database command is sent with the following data
-
-`{"cmd": "read_from_disk", "db_key": "test", "unique_id": 348817502135}`
-
-then a successful execution would result in
-
-`{"cmd": "read_from_disk", "mode": "ok", "msg":"", "db_key":"test", "unique_id": 348817502135}`
-
-however, in addition if an error were to be thrown, the following could result
-
-`{"cmd": "read_from_disk", "mode": "error", "msg":"Error Message", "db_key":"test", "unique_id": 348817502135}`
-
-This enables unique responses to be given even when an error is triggered early in the parsing process for a packet on the server.
-
-## 6. Database Files
+## 5. Database Files
 
 Databases are stored on disk starting at a root directory. Within this root directory are individual directories for each database. Within these directories is a `.database` file of the same name as the directory it is stored within and `.item` files for each item stored within that database. 
 
-### `.database`
+### 5.1 `.database`
 
 The contents of a `.database` file would resemble the following:
 
@@ -325,7 +331,7 @@ The `keys` field contains a list of all of the keys accessible by the database. 
 
 The `ver` field contains the version of ACI which last wrote the database. This is used to determine if the database format is compatible with the current version of ACI.
 
-### `.item`
+### 5.2 `.item`
 
 The contents of a `.item` file would resemble the following:
 
@@ -337,7 +343,7 @@ The `permissions` field contains the permissions object for the item.
 
 The `type` field contains the type of data stored within the item, the only values which are used currently are `"table"` for objects, `"list"` for lists, and `"string"` for all other datatypes.
 
-### Permissions
+### 5.3 Permissions
 
 The permissions struct would resemble the following:
 
