@@ -48,7 +48,7 @@ fn extract_number(val: &Value, title: &str) -> Result<usize, String>
 }
 
 /// Wrap a Result<Option<Value>, String> to include an optional unique ID
-fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<&Value>) -> Result<Option<Value>, String>
+fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<Value>) -> Result<Option<Value>, String>
 {
     if unique_id.is_none()
     {
@@ -56,22 +56,15 @@ fn add_unique_id(prev: Result<Option<Value>, String>, unique_id: Option<&Value>)
     }
     else if let Ok(v) = prev
     {
-        if v.is_none()
+        match v
         {
-            Ok(v)
-        }
-        else
-        {
-            if let Value::Object(mut obj) = v.clone().unwrap()
+            Some(Value::Object(mut obj)) =>
             {
-                obj.insert("unique_id".to_string(), unique_id.unwrap().clone());
+                obj.insert("unique_id".to_string(), unique_id.unwrap());
 
                 Ok(Some(Value::Object(obj)))
-            }
-            else
-            {
-                Ok(v)
-            }
+            },
+            default => Ok(default)
         }
     }
     else
@@ -126,7 +119,7 @@ impl ServerInterface
     {
         trace!("Executing command `{:?}` as {:?}", command.cmd, self.user_profile);
 
-        let cmd_map = if let Value::Object(map) = command.data
+        let mut cmd_map = if let Value::Object(map) = command.data
         {
             map
         }
@@ -137,7 +130,7 @@ impl ServerInterface
             return Err(msg);
         };
 
-        let unique_id = cmd_map.get("unique_id").clone();
+        let unique_id = cmd_map.remove("unique_id");
 
         add_unique_id(match command.cmd
         {
@@ -204,11 +197,11 @@ impl ServerInterface
                 let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
 
-                let data = cmd_map.get("val").unwrap();
+                let data = cmd_map.remove("val").unwrap();
 
                 match self.server.databases.get(db_key)
                 {
-                    Some(v) => {v.write_to_key(&key, data.clone(), &self.user_profile)?},
+                    Some(v) => {v.write_to_key(&key, data, &self.user_profile)?},
                     None => 
                     {
                         let msg = format!("No database with key `{}` initialized", db_key);
@@ -248,11 +241,11 @@ impl ServerInterface
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
                 let index = extract_number(cmd_map.get("index").unwrap(), "index")?;
 
-                let data = cmd_map.get("val").unwrap();
+                let data = cmd_map.remove("val").unwrap();
 
                 match self.server.databases.get(db_key)
                 {
-                    Some(v) => {v.write_to_key_index(&key, index, data.clone(), &self.user_profile)?},
+                    Some(v) => {v.write_to_key_index(&key, index, data, &self.user_profile)?},
                     None => 
                     {
                         let msg = format!("No database with key `{}` initialized", db_key);
@@ -270,11 +263,11 @@ impl ServerInterface
                 let db_key = &extract_string(cmd_map.get("db_key").unwrap(), "database key")?;
                 let key = &extract_string(cmd_map.get("key").unwrap(), "item key")?;
 
-                let data = cmd_map.get("val").unwrap();
+                let data = cmd_map.remove("val").unwrap();
 
                 let index = match self.server.databases.get(db_key)
                 {
-                    Some(v) => {v.append_to_key(&key, data.clone(), &self.user_profile)?},
+                    Some(v) => {v.append_to_key(&key, data, &self.user_profile)?},
                     None => 
                     {
                         let msg = format!("No database with key `{}` initialized", db_key);
