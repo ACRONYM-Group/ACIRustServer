@@ -89,11 +89,11 @@ impl Server
     {
         if let Ok(val) = self.config_database.read_from_key("port", &self.config_admin)
         {
-            if let Value::Number(ip) = val
+            if let Value::Number(port) = val
             {
-                if ip.is_u64()
+                if let Some(port) = port.as_u64()
                 {
-                    Ok(ip.as_u64().unwrap() as usize)
+                    Ok(port as usize)
                 }
                 else
                 {
@@ -117,6 +117,12 @@ impl Server
         }
     }
 
+    /// Get the database by name
+    pub fn get_database_by_name(&self, name: &str) -> Result<DatabaseInterface, String>
+    {
+        Ok(self.databases.get(name).ok_or(format!("No database with name, `{}` loaded", name))?.clone())
+    }
+
     /// Read a database from disk
     pub fn read_database_from_disk(&self, name: &str) -> Result<(), String>
     {
@@ -135,7 +141,7 @@ impl Server
             return Err(msg);
         }
 
-        database_to_disk(&self.opt.path.clone(), self.databases.get(name).unwrap().clone(), &self.opt)?;
+        database_to_disk(&self.opt.path.clone(), self.get_database_by_name(name)?, &self.opt)?;
 
         Ok(())
     }
@@ -150,7 +156,7 @@ impl Server
             return Err(msg);
         }
 
-        Ok(self.databases.get(name).unwrap().database.get_all_keys()?)
+        Ok(self.get_database_by_name(name)?.database.get_all_keys()?)
     }
 
     /// Get the array of db_keys in the server
@@ -180,7 +186,7 @@ impl Server
             return Ok((false, msg));
         }
 
-        let id_map = extract_object(user_map.get(id).unwrap(), "Specific user data")?;
+        let id_map = extract_object(user_map.get(id).ok_or(format!("No user with id, `{}` loaded", id))?, "Specific user data")?;
 
         if !id_map.contains_key("tokens")
         {
@@ -189,7 +195,7 @@ impl Server
             return Err(msg);
         }
 
-        let allowable_tokens = if let Value::Array(tokens) = id_map.get("tokens").unwrap()
+        let allowable_tokens = if let Value::Array(tokens) = id_map.get("tokens").ok_or(format!("ID map does not contain a tokens field"))?
         {
             tokens
         }

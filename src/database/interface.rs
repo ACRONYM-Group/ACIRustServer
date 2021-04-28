@@ -33,9 +33,9 @@ impl DatabaseInterface
     /// Verify a user can read from a key
     fn check_read(&self, key: &str, user: &UserAuthentication) -> Result<(), String>
     {
-        if self.permissions.contains_key(key)
+        if let Some(permissions) = self.permissions.get(key)
         {
-            if !self.permissions.get(key).unwrap().check_user_read(user)?
+            if !permissions.check_user_read(user)?
             {
                 let msg = format!("User not authenticated {:?}", user);
                 warn!("{}", msg);
@@ -55,9 +55,9 @@ impl DatabaseInterface
     /// Verify a user can write to a key
     fn check_write(&self, key: &str, user: &UserAuthentication, add_new_permission: bool) -> Result<(), String>
     {
-        if self.permissions.contains_key(key)
+        if let Some(permissions) = self.permissions.get(key)
         {
-            if !self.permissions.get(key).unwrap().check_user_write(user)?
+            if !permissions.check_user_write(user)?
             {
                 let msg = format!("User not authenticated {:?}", user);
                 warn!("{}", msg);

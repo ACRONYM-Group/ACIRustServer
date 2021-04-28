@@ -28,9 +28,9 @@ fn extract_number(val: &Value, title: &str) -> Result<usize, String>
 {
     if let Value::Number(n) = val
     {
-        if n.is_u64()
+        if let Some(n) = n.as_u64()
         {
-            Ok(n.as_u64().unwrap() as usize)
+            Ok(n as usize)
         }
         else
         {

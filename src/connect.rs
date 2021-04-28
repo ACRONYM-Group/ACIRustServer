@@ -13,6 +13,23 @@ use chashmap::CHashMap;
 
 type SendingChannel = std::sync::Arc<tokio::sync::mpsc::UnboundedSender<std::result::Result<tokio_tungstenite::tungstenite::Message, tokio_tungstenite::tungstenite::Error>>>;
 
+macro_rules! checked_send {
+    ($tx:expr, $msg:expr) => {
+        if let Err(e) = $tx.send($msg)
+        {
+            log::error!("Unable to send message, got error: `{}`", e);
+            return;
+        }
+    };   
+    ($tx:expr, $msg:expr, $err:expr) => {
+        if let Err(e) = $tx.send($msg)
+        {
+            log::error!("Unable to send message, got error: `{}`", e);
+            return $err;
+        }
+    };
+}
+
 pub async fn run(opt: args::Arguments) -> Result<(), String>
 {
     log::info!("Starting ACI Server");
@@ -170,7 +187,7 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
 
             if let Ok(Some(json)) = json
             {
-                tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(json.to_string()))).unwrap();
+                checked_send!(tx, Ok(tokio_tungstenite::tungstenite::Message::Text(json.to_string())));
             }
         },
         serde_json::Value::Array(values) => 
@@ -188,7 +205,7 @@ async fn handle_message(tx: SendingChannel, val: serde_json::Value, aci_interfac
 
             if result.len() > 0
             {
-                tx.send(Ok(tokio_tungstenite::tungstenite::Message::Text(serde_json::json!(result).to_string()))).unwrap();
+                checked_send!(tx, Ok(tokio_tungstenite::tungstenite::Message::Text(serde_json::json!(result).to_string())));
             }
         },
         default =>
@@ -202,16 +219,9 @@ async fn handle_individual(tx: SendingChannel, val: serde_json::Value, aci_inter
 {
     let no_ack = if let serde_json::Value::Object(map) = &val
     {
-        if map.contains_key("no_ack")
+        if let Some(serde_json::Value::Bool(b)) = map.get("no_ack")
         {
-            if let serde_json::Value::Bool(b) = map.get("no_ack").unwrap()
-            {
-                b.clone()
-            }
-            else
-            {
-                false
-            }
+            b.clone()
         }
         else
         {
@@ -234,41 +244,40 @@ async fn handle_individual(tx: SendingChannel, val: serde_json::Value, aci_inter
         {
             if let serde_json::Value::Object(map) = command.data
             {
-                if map.contains_key("destination")
+                if let Some(serde_json::Value::String(dest)) = map.get("destination")
                 {
-                    if let serde_json::Value::String(dest) = map.get("destination").unwrap()
+                    if let Some(conn) = connections_hashmap.get(dest)
                     {
-                        if connections_hashmap.contains_key(dest)
-                        {
-                            connections_hashmap.get(dest).unwrap().send(Ok(tokio_tungstenite::tungstenite::Message::Text(
-                                val.to_string()
-                            ))).unwrap();
+                        checked_send!(conn, Ok(tokio_tungstenite::tungstenite::Message::Text(
+                            val.to_string()
+                        )), Err(()));
 
-                            if no_ack
-                            {
-                                return Ok(None);
-                            }
-                            {   
-                                return Ok(Some(serde_json::json!({"cmd": "event", "mode": "ack", "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()})));
-                            }   
-                        }
-                        else
+                        if no_ack
                         {
-                            log::warn!("Attempted to forward event to `{}`, however, this user is not connected", dest);
-                            let msg = format!("Unable to connect to user `{}`", dest);
-                            
-                            if no_ack
-                            {
-                                return Ok(None);
-                            }
-                            {   
-                                return Ok(Some(serde_json::json!({"cmd": "event", "mode": "error", "msg": msg, "event_id": map.get("event_id").unwrap(), "origin": map.get("origin").unwrap()})));
-                            } 
+                            return Ok(None);
                         }
+                        {   
+                            if let (Some(event_id), Some(origin)) = (map.get("event_id"), map.get("origin"))
+                            {
+                                return Ok(Some(serde_json::json!({"cmd": "event", "mode": "ack", "event_id": event_id, "origin": origin})));
+                            }
+                        }   
                     }
                     else
                     {
-                        log::error!("Event destination is not a string, ignoring packet");
+                        log::warn!("Attempted to forward event to `{}`, however, this user is not connected", dest);
+                        let msg = format!("Unable to connect to user `{}`", dest);
+                        
+                        if no_ack
+                        {
+                            return Ok(None);
+                        }
+                        {   
+                            if let (Some(event_id), Some(origin)) = (map.get("event_id"), map.get("origin"))
+                            {
+                            return Ok(Some(serde_json::json!({"cmd": "event", "mode": "error", "msg": msg, "event_id": event_id, "origin": origin})));
+                            }
+                        } 
                     }
                 }
                 else

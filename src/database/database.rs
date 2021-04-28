@@ -54,9 +54,9 @@ impl Database
     {
         trace!("Reading data from `{}` in database `{}`", key, self.name);
 
-        if self.data.contains_key(key)
+        if let Some(data) = self.data.get(key)
         {
-            Ok(self.data.get(key).unwrap().clone())
+            Ok(data.clone())
         }
         else
         {
@@ -69,17 +69,17 @@ impl Database
     /// Verify an entry is an array
     fn verify_key_array(&self, key: &str) -> Result<(), String>
     {
-        if self.data.contains_key(key)
+        if let Some(value) = self.data.get(key)
         {
-            match &*self.data.get(key).unwrap()
+            if let Value::Array(_) = &*value
             {
-                Value::Array(_) => Ok(()),
-                default => 
-                {
-                    let msg = format!("The value for key `{}` is not an array ({:?})", key, default);
+                Ok(())
+            }
+            else
+            {
+                let msg = format!("The value for key `{}` is not an array ({:?})", key, &*value);
                     error!("{}", msg);
                     Err(msg)
-                }
             }
         }
         else
