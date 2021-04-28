@@ -1,1 +1,0 @@
-{"key":"test_begin","owner":"self","permissions":{"read":[["a_user","any"],["g_user","any"]],"write":[["a_user","term.jordan"],["a_user","term.carter"],["a_user","any"],["g_user","any"]]},"subs":[],"type":"string","value":"True"}

@@ -1,0 +1,1 @@
+{"key": "a_users", "value": {"bots.laura": {"tokens": ["AaCt56Kg9"]}, "term.jordan": {"tokens": ["AbDc314"]}, "term.carter": {"tokens": ["AbDc314"]}}, "owner": "self", "permissions": {"read": [["a_user", "any"], ["g_user", "any"]], "write": [["a_user", "term.jordan"], ["a_user", "term.carter"], ["g_user", "any"]]}, "subs": [], "type": "string"}
