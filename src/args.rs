@@ -3,6 +3,7 @@ use structopt::StructOpt;
 /// Command line arguments to be parsed by StructOpt
 #[derive(Debug, StructOpt, Clone)]
 #[structopt(about = "Starts an ACI Server")]
+#[structopt(version = crate::version::BUILD_VERSION)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Arguments
 {
