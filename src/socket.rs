@@ -14,10 +14,9 @@ use chashmap::CHashMap;
 
 type SendingChannel = tokio::sync::mpsc::Sender<std::string::String>;
 
-pub async fn run(opt: args::Arguments) -> Result<(), String>
+pub async fn run(opt: args::Arguments, aci: std::sync::Arc<server::Server>) -> Result<(), String>
 {
     log::info!("Starting Raw ACI Server");
-    let aci = std::sync::Arc::new(server::Server::new(&opt)?);
 
     let ip = if opt.ignore_config || opt.ip.is_some()
     {
@@ -37,7 +36,12 @@ pub async fn run(opt: args::Arguments) -> Result<(), String>
         aci.config_get_ip()?
     };
 
-    let port = if opt.ignore_config || opt.port.is_some()
+    // Testing port
+    let port = 8766;
+
+    // FIXME: Correct this, this is stupid and only for testing!
+    
+    /*if opt.ignore_config || opt.port.is_some()
     {
         match opt.port
         {
@@ -53,7 +57,7 @@ pub async fn run(opt: args::Arguments) -> Result<(), String>
     else
     {
         aci.config_get_port()?
-    };
+    };*/ 
 
     let connections_hashmap: std::sync::Arc<CHashMap<String, SendingChannel>> = std::sync::Arc::new(CHashMap::new());
 

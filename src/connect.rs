@@ -30,10 +30,9 @@ macro_rules! checked_send {
     };
 }
 
-pub async fn run(opt: args::Arguments) -> Result<(), String>
+pub async fn run(opt: args::Arguments, aci: std::sync::Arc<server::Server>) -> Result<(), String>
 {
     log::info!("Starting ACI Server");
-    let aci = std::sync::Arc::new(server::Server::new(&opt)?);
 
     let ip = if opt.ignore_config || opt.ip.is_some()
     {
