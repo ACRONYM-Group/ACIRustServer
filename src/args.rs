@@ -22,6 +22,10 @@ pub struct Arguments
     #[structopt(short, long)]
     pub allow_all: bool,
 
+    /// Run in raw socket mode
+    #[structopt(short, long)]
+    pub raw_socket: bool,
+
     /// IP address to connect the server to (overrides the config database)
     #[structopt(long)]
     pub ip: Option<String>,

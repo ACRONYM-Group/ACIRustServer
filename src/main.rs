@@ -11,10 +11,23 @@ fn main()
 
     if let Ok(rt) = tokio::runtime::Runtime::new()
     {
-        match rt.block_on(async {connect::run(opt).await})
+        if opt.raw_socket
         {
-            Ok(_) => {},
-            Err(e) => eprintln!("ACI Server encountered an error: {}", e)
+            log::info!("Using Raw Socket Server");
+
+            if let Err(e) = rt.block_on(async {socket::run(opt).await})
+            {
+                eprintln!("ACI Raw Socket Server encountered an error: {}", e)
+            }
+        }
+        else
+        {
+            log::info!("Using Web Socket Server");
+
+            if let Err(e) = rt.block_on(async {connect::run(opt).await})
+            {
+                eprintln!("ACI Web Socket Server encountered an error: {}", e)
+            }
         }
     }
     else
